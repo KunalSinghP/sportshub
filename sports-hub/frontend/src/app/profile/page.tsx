@@ -1,0 +1,186 @@
+"use client";
+
+import { useState } from "react";
+import { User as UserIcon, Settings, Target, MessageSquare, Clock } from "lucide-react";
+import PostCard from "@/components/PostCard";
+
+export default function ProfilePage() {
+  const [activeTab, setActiveTab] = useState("Posts");
+  
+  // Mock User
+  const user = {
+    username: "OracleSports",
+    joined: "Aug 2025",
+    accuracy: 82.5,
+    rank: 1,
+    totalPicks: 142
+  };
+
+  const mockPosts = [
+    {
+      id: 5,
+      title: "How I hit an 80% accuracy rate this season",
+      content: "It mostly comes down to ignoring emotional biases and heavily weighting recent away performance metrics...",
+      authorName: user.username,
+      communityName: "Sports Analytics",
+      upvotes: 412,
+      commentCount: 89,
+      timeAgo: "2 days ago"
+    }
+  ];
+
+  return (
+    <div className="max-w-4xl mx-auto pb-8 p-4">
+      
+      {/* Profile Header */}
+      <div className="glass rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start gap-6 mb-8 mt-4">
+        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shrink-0 border-4 border-[#0b0f19] shadow-xl">
+          <UserIcon size={40} className="text-white" />
+        </div>
+        
+        <div className="flex-1 text-center md:text-left">
+          <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4 mb-2">
+            <h1 className="text-3xl font-bold">{user.username}</h1>
+            <span className="bg-[#ff6b00]/20 text-[#ff6b00] border border-[#ff6b00]/30 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
+              #1 Global Rank
+            </span>
+          </div>
+          <p className="text-slate-400 text-sm flex items-center justify-center md:justify-start gap-1">
+            <Clock size={14} /> Joined {user.joined}
+          </p>
+        </div>
+        
+        <button className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg transition-colors text-sm font-semibold border border-white/10">
+          <Settings size={16} /> Edit Profile
+        </button>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="glass rounded-xl p-5 text-center transition-transform hover:scale-105">
+          <Target className="mx-auto text-[#ff6b00] mb-2" size={24} />
+          <div className="text-2xl font-black">{user.accuracy}%</div>
+          <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Accuracy</div>
+        </div>
+        <div className="glass rounded-xl p-5 text-center transition-transform hover:scale-105">
+          <TrophyIcon className="mx-auto text-yellow-500 mb-2" size={24} />
+          <div className="text-2xl font-black">#{user.rank}</div>
+          <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Global Rank</div>
+        </div>
+        <div className="glass rounded-xl p-5 text-center transition-transform hover:scale-105">
+          <ActivityIcon className="mx-auto text-blue-400 mb-2" size={24} />
+          <div className="text-2xl font-black font-mono">{user.totalPicks}</div>
+          <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Total Picks</div>
+        </div>
+        <div className="glass rounded-xl p-5 text-center transition-transform hover:scale-105">
+          <MessageSquare className="mx-auto text-purple-400 mb-2" size={24} />
+          <div className="text-2xl font-black font-mono">34</div>
+          <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Posts</div>
+        </div>
+      </div>
+
+      {/* Content Tabs */}
+      <div className="flex gap-6 border-b border-white/10 mb-6 px-2">
+        {["Posts", "Comments", "Prediction History"].map((tab) => (
+          <button
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            className={`pb-3 text-sm font-semibold transition-colors relative ${
+              activeTab === tab ? "text-white" : "text-slate-500 hover:text-slate-300"
+            }`}
+          >
+            {tab}
+            {activeTab === tab && (
+              <span className="absolute bottom-0 left-0 w-full h-0.5 bg-[#ff6b00] rounded-t-full" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === "Posts" && (
+        <div className="space-y-4">
+          {mockPosts.map(post => (
+            <PostCard key={post.id} {...post} />
+          ))}
+          {mockPosts.length === 0 && (
+             <div className="py-12 text-center text-slate-500">
+               No posts yet
+             </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "Prediction History" && (
+        <div className="glass rounded-xl overflow-hidden p-2">
+           <table className="w-full text-left text-sm">
+              <thead className="text-slate-500 border-b border-white/5">
+                <tr>
+                  <th className="p-3">Match</th>
+                  <th className="p-3">Prediction</th>
+                  <th className="p-3 text-right">Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-white/5 hover:bg-white/5">
+                   <td className="p-3 font-semibold">Arsenal vs Liverpool</td>
+                   <td className="p-3 text-slate-300">Arsenal</td>
+                   <td className="p-3 text-right text-yellow-500 font-bold">Pending</td>
+                </tr>
+                <tr className="hover:bg-white/5">
+                   <td className="p-3 font-semibold">Real Madrid vs Barcelona</td>
+                   <td className="p-3 text-slate-300">Real Madrid</td>
+                   <td className="p-3 text-right text-green-500 font-bold">WIN</td>
+                </tr>
+              </tbody>
+           </table>
+        </div>
+      )}
+
+    </div>
+  );
+}
+
+// Extracted icons for aesthetic consistency
+function TrophyIcon(props: any) {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      {...props}
+    >
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path>
+      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path>
+      <path d="M4 22h16"></path>
+      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path>
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path>
+      <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path>
+    </svg>
+  );
+}
+
+function ActivityIcon(props: any) {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      {...props}
+    >
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+    </svg>
+  );
+}
