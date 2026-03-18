@@ -1,62 +1,18 @@
 import MatchCard from "@/components/MatchCard";
 import PostCard from "@/components/PostCard";
 import { Trophy, TrendingUp } from "lucide-react";
+import { API } from "@/lib/api";
 
-export default function Home() {
-  // Mock Data for initial UI testing
-  const mockMatches = [
-    {
-      id: 1,
-      team1: "Arsenal",
-      team2: "Liverpool",
-      score1: 2,
-      score2: 2,
-      status: "live" as const,
-      timeStr: "78'",
-      viewers: 12450
-    },
-    {
-      id: 2,
-      team1: "Lakers",
-      team2: "Warriors",
-      score1: 0,
-      score2: 0,
-      status: "upcoming" as const,
-      timeStr: "Today, 8:00 PM"
-    },
-    {
-      id: 3,
-      team1: "Real Madrid",
-      team2: "Barcelona",
-      score1: 3,
-      score2: 1,
-      status: "finished" as const,
-      timeStr: "FT"
-    }
-  ];
+export default async function Home() {
+  const matchRes = await fetch(`${API}/matches`, {
+   cache: "no-store",
+  });
+  const mockMatches = await matchRes.json();
 
-  const mockPosts = [
-    {
-      id: 1,
-      title: "What a match from Arsenal today! Truly an unbelievable performance.",
-      content: "That last goal was insane. The build up play from the back was beautiful. Arteta really has them playing exceptional football right now.",
-      authorName: "gunner_fan99",
-      communityName: "Premier League",
-      upvotes: 342,
-      commentCount: 56,
-      timeAgo: "2 hours ago"
-    },
-    {
-      id: 2,
-      title: "LeBron's legacy is unmatched. Period.",
-      content: "People keep arguing about statistics, but the longevity alone puts him in a category of 1. What he's doing at his age defies biology.",
-      authorName: "hoopshead",
-      communityName: "NBA Discussion",
-      upvotes: 1105,
-      commentCount: 412,
-      timeAgo: "5 hours ago"
-    }
-  ];
+  const postRes = await fetch(`${API}/posts`, {
+   cache: "no-store",
+  });
+  const mockPosts = await postRes.json();
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
@@ -73,7 +29,7 @@ export default function Home() {
           
           {/* Hide scrollbar but allow dragging/scrolling */}
           <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scroll">
-            {mockMatches.map(match => (
+            {mockMatches.map((match: any) => (
               <div key={match.id} className="snap-start">
                 <MatchCard {...match} />
               </div>
@@ -95,7 +51,7 @@ export default function Home() {
           </div>
           
           <div className="space-y-4">
-            {mockPosts.map(post => (
+            {mockPosts.map((post: any) => (
               <PostCard key={post.id} {...post} />
             ))}
           </div>

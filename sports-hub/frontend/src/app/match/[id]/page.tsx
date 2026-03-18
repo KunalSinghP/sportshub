@@ -1,5 +1,5 @@
 "use client";
-
+import { API } from "@/lib/api";
 import { useState, useEffect } from "react";
 import { ArrowLeft, MessageSquare, PieChart, Activity, Zap, Send } from "lucide-react";
 import Link from "next/link";
@@ -12,6 +12,18 @@ export default function MatchPage({ params }: { params: { id: string } }) {
   ]);
   const [msgInput, setMsgInput] = useState("");
 
+  const [match, setMatch] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchMatch() {
+      const res = await fetch(`${API}/matches/${params.id}`);
+      const data = await res.json();
+      setMatch(data);
+    }
+
+    fetchMatch();
+  }, [params.id]);
+  
   // AI Probabilities Mock
   const probTeam1 = 65;
   const probTeam2 = 35;
@@ -22,7 +34,8 @@ export default function MatchPage({ params }: { params: { id: string } }) {
     setChatMessages([...chatMessages, { id: Date.now(), user: "You", text: msgInput, time: "Now" }]);
     setMsgInput("");
   };
-
+  
+  if (!match) return <div className="p-10">Loading...</div>;
   return (
     <div className="max-w-5xl mx-auto pb-8 p-4">
       <Link href="/" className="inline-flex items-center gap-2 text-slate-400 hover:text-white mb-6 transition-colors">
@@ -37,24 +50,24 @@ export default function MatchPage({ params }: { params: { id: string } }) {
         
         <div className="flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
           <div className="flex-1 text-center md:text-right">
-            <h2 className="text-3xl md:text-4xl font-bold mb-2">Arsenal</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-2">{match.team1}</h2>
             <p className="text-slate-400">Home</p>
           </div>
           
           <div className="flex flex-col items-center px-8">
             <div className="flex items-center gap-4 text-4xl md:text-6xl font-black font-mono tracking-tighter mb-2">
-              <span>2</span>
+              <span>{match.score_team1}</span>
               <span className="text-slate-600">-</span>
-              <span>2</span>
+              <span>{match.score_team2}</span>
             </div>
             <div className="flex items-center gap-2 text-red-500 font-bold text-sm bg-red-500/10 px-3 py-1 rounded-full">
               <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              78' LIVE
+              {match.status?.toUpperCase()}
             </div>
           </div>
 
           <div className="flex-1 text-center md:text-left">
-            <h2 className="text-3xl md:text-4xl font-bold mb-2">Liverpool</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-2">{match.team2}</h2>
             <p className="text-slate-400">Away</p>
           </div>
         </div>
