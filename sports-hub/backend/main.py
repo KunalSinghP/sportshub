@@ -6,6 +6,7 @@ from routers import auth, communities, matches, ai
 from ws.manager import manager
 import json
 from fastapi.middleware.cors import CORSMiddleware
+from seed import seed_database
 
 # Create Database Tables
 models.Base.metadata.create_all(bind=engine)
@@ -42,3 +43,5 @@ async def match_websocket_endpoint(websocket: WebSocket, match_id: int):
 @app.get("/")
 def read_root():
     return {"message": "Welcome to SportsHub API. Navigate to /docs for Swagger documentation."}
+
+seed_database()
