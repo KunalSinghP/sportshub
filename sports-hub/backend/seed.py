@@ -14,8 +14,8 @@ def seed_database():
         return
 
     print("Seeding Users...")
-    user1 = models.User(username="testuser", hashed_password=get_password_hash("password123"))
-    user2 = models.User(username="analyst_bob", hashed_password=get_password_hash("password123"))
+    user1 = models.User(username="testuser", hashed_password=get_password_hash("pass123"))
+    user2 = models.User(username="analyst_bob", hashed_password=get_password_hash("pass123"))
     db.add_all([user1, user2])
     db.commit()
 
