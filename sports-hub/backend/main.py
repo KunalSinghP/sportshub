@@ -45,3 +45,7 @@ def read_root():
     return {"message": "Welcome to SportsHub API. Navigate to /docs for Swagger documentation."}
 
 seed_database()
+
+@app.on_event("startup")
+def load_data():
+    seed_database()
