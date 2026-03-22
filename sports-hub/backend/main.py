@@ -7,6 +7,7 @@ from ws.manager import manager
 import json
 from fastapi.middleware.cors import CORSMiddleware
 from seed import seed_database
+from routers import posts
 
 # Create Database Tables
 models.Base.metadata.create_all(bind=engine)
@@ -27,6 +28,7 @@ app.include_router(auth.router)
 app.include_router(communities.router)
 app.include_router(matches.router)
 app.include_router(ai.router)
+app.include_router(posts.router)
 
 @app.websocket("/ws/match/{match_id}")
 async def match_websocket_endpoint(websocket: WebSocket, match_id: int):
