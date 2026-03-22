@@ -2,12 +2,11 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from database import engine
 from models import models
-from routers import auth, communities, matches, ai
+from routers import auth, communities, matches, ai, posts
 from ws.manager import manager
 import json
 from fastapi.middleware.cors import CORSMiddleware
 from seed import seed_database
-from routers import posts
 
 # Create Database Tables
 models.Base.metadata.create_all(bind=engine)
