@@ -5,11 +5,11 @@ interface PostCardProps {
   id: number;
   title: string;
   content: string;
-  authorName: string;
-  communityName: string;
-  upvotes: number;
-  commentCount: number;
-  timeAgo: string;
+  authorName?: string;
+  communityName?: string;
+  upvotes?: number;
+  commentCount?: number;
+  timeAgo?: string;
 }
 
 export default function PostCard({
@@ -22,49 +22,89 @@ export default function PostCard({
   commentCount,
   timeAgo,
 }: PostCardProps) {
+
+  // ✅ SAFE FALLBACKS (CRITICAL FIX)
+  const safeCommunity = (communityName || "general")
+    .toLowerCase()
+    .replace(/\s+/g, "-");
+
+  const safeAuthor = authorName || "user";
+  const safeUpvotes = upvotes ?? 0;
+  const safeComments = commentCount ?? 0;
+  const safeTime = timeAgo || "Just now";
+
   return (
     <div className="glass rounded-xl p-4 transition-colors hover:border-white/10 group">
+      
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2 text-xs">
-          <Link href={`/community/${communityName.toLowerCase().replace(' ', '-')}`} className="font-bold text-white hover:underline">
-            p/{communityName}
+          
+          <Link
+            href={`/community/${safeCommunity}`}
+            className="font-bold text-white hover:underline"
+          >
+            p/{communityName || "General"}
           </Link>
+
           <span className="text-slate-500">•</span>
-          <span className="text-slate-400 text-[11px]">Posted by u/{authorName}</span>
+
+          <span className="text-slate-400 text-[11px]">
+            Posted by u/{safeAuthor}
+          </span>
+
           <span className="text-slate-500">•</span>
-          <span className="text-slate-400 text-[11px]">{timeAgo}</span>
+
+          <span className="text-slate-400 text-[11px]">
+            {safeTime}
+          </span>
         </div>
+
         <button className="text-slate-500 hover:text-white transition-colors">
           <MoreHorizontal size={16} />
         </button>
       </div>
 
       {/* Content */}
-      <Link href={`/community/${communityName.toLowerCase().replace(' ', '-')}/post/${id}`} className="block mb-3">
-        <h3 className="text-lg font-bold text-slate-100 mb-1 leading-tight group-hover:text-[#ff6b00] transition-colors">{title}</h3>
+      <Link
+        href={`/community/${safeCommunity}/post/${id}`}
+        className="block mb-3"
+      >
+        <h3 className="text-lg font-bold text-slate-100 mb-1 leading-tight group-hover:text-[#ff6b00] transition-colors">
+          {title || "Untitled Post"}
+        </h3>
+
         <p className="text-sm text-slate-300 line-clamp-3 leading-relaxed">
-          {content}
+          {content || "No content available"}
         </p>
       </Link>
 
       {/* Actions */}
       <div className="flex items-center gap-4 text-xs font-semibold text-slate-400 mt-2">
+        
+        {/* Upvotes */}
         <div className="flex items-center bg-white/5 rounded-full border border-white/5">
           <button className="p-1.5 hover:bg-white/10 rounded-l-full hover:text-[#ff6b00] transition-colors">
             <ArrowBigUp size={18} />
           </button>
-          <span className="px-1 text-white">{upvotes}</span>
+
+          <span className="px-1 text-white">{safeUpvotes}</span>
+
           <button className="p-1.5 hover:bg-white/10 rounded-r-full hover:text-[#ff6b00] transition-colors rotate-180">
             <ArrowBigUp size={18} />
           </button>
         </div>
-        
-        <Link href={`/community/${communityName.toLowerCase().replace(' ', '-')}/post/${id}`} className="flex items-center gap-1.5 hover:bg-white/5 px-3 py-1.5 rounded-full transition-colors">
+
+        {/* Comments */}
+        <Link
+          href={`/community/${safeCommunity}/post/${id}`}
+          className="flex items-center gap-1.5 hover:bg-white/5 px-3 py-1.5 rounded-full transition-colors"
+        >
           <MessageSquare size={16} />
-          <span>{commentCount} Comments</span>
+          <span>{safeComments} Comments</span>
         </Link>
 
+        {/* Share */}
         <button className="flex items-center gap-1.5 hover:bg-white/5 px-3 py-1.5 rounded-full transition-colors">
           <Share2 size={16} />
           <span>Share</span>
