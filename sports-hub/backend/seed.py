@@ -48,6 +48,16 @@ def seed_database():
     db.add(post1)
     db.commit()
 
+    post3 = models.Post(
+    title="Liverpool defense is shaky",
+    content="They are conceding too many chances",
+    user_id=1,
+    community_id=1
+    )
+
+    db.add(post3)
+    db.commit()
+
     comment1 = models.Comment(
         content="Absolutely agree, brilliant finish.", 
         author_id=user2.id, post_id=post1.id
