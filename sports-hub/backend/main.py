@@ -31,16 +31,27 @@ app.include_router(posts.router)
 
 @app.websocket("/ws/match/{match_id}")
 async def match_websocket_endpoint(websocket: WebSocket, match_id: int):
+    await websocket.accept()  # ✅ REQUIRED
+
     await manager.connect(match_id, websocket)
+
     try:
         while True:
             data = await websocket.receive_text()
-            # Simple echo broadcast for MVP chat
-            msg_payload = {"user": "User", "text": data}
-            await manager.broadcast_to_match(match_id, json.dumps(msg_payload))
+
+            msg_payload = {
+                "user": "User",
+                "text": data
+            }
+
+            await manager.broadcast_to_match(
+                match_id,
+                json.dumps(msg_payload)
+            )
+
     except WebSocketDisconnect:
         manager.disconnect(match_id, websocket)
-
+        
 @app.get("/")
 def read_root():
     return {"message": "Welcome to SportsHub API. Navigate to /docs for Swagger documentation."}
