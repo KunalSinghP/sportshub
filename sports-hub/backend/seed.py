@@ -51,8 +51,7 @@ def seed_database():
     post3 = models.Post(
     title="Liverpool defense is shaky",
     content="They are conceding too many chances",
-    user_id=1,
-    community_id=1
+    author_id=user1.id, community_id=comm1.id, upvotes=10
     )
 
     db.add(post3)
