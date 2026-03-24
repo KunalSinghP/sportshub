@@ -1,6 +1,6 @@
 "use client";
 import { API } from "@/lib/api";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, MessageSquare, PieChart, Activity, Zap, Send } from "lucide-react";
 import Link from "next/link";
 
@@ -16,6 +16,7 @@ export default function MatchPage({ params }: { params: any }) {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [wsStatus, setWsStatus] = useState("🟡 Connecting...");
   const [msgInput, setMsgInput] = useState("");
+  const myMessages = useRef<Set<string>>(new Set());
 
   const [match, setMatch] = useState<any>(null);
 
@@ -42,6 +43,11 @@ export default function MatchPage({ params }: { params: any }) {
     };
 
     ws.onmessage = (event) => {
+      if (myMessages.current.has(event.data)) {
+        myMessages.current.delete(event.data);
+        return; // Skip our own message since we optimistically added it
+      }
+
       setMessages((prev) => [
         ...prev,
         {
@@ -76,6 +82,7 @@ export default function MatchPage({ params }: { params: any }) {
     if (!msgInput.trim()) return;
 
     if (socket && socket.readyState === WebSocket.OPEN) {
+      myMessages.current.add(msgInput); // Track that we sent this
       socket.send(msgInput); // ✅ FIXED (NO JSON)
 
       setMessages((prev) => [
