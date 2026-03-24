@@ -6,10 +6,8 @@ import Link from "next/link";
 
 export default function MatchPage({ params }: { params: { id: string } }) {
   const [activeTab, setActiveTab] = useState("Chat");
-  const [chatMessages, setChatMessages] = useState([
-    { id: 1, user: "fan123", text: "What a save!!", time: "10:24" },
-    { id: 2, user: "sports_guy", text: "They need to push higher up the pitch", time: "10:25" }
-  ]);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [socket, setSocket] = useState<WebSocket | null>(null);
   const [msgInput, setMsgInput] = useState("");
 
   const [match, setMatch] = useState<any>(null);
@@ -23,6 +21,27 @@ export default function MatchPage({ params }: { params: { id: string } }) {
 
     fetchMatch();
   }, [params.id]);
+
+  useEffect(() => {
+    const ws = new WebSocket(`wss://sportshub-njro.onrender.com/ws/match/${params.id}`);
+
+    ws.onmessage = (event) => {
+      setMessages((prev) => [
+        ...prev,
+        { id: Date.now() + Math.random(), user: "User", text: event.data }
+      ]);
+    };
+
+    ws.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    setSocket(ws);
+
+    return () => {
+      ws.close();
+    };
+  }, [params.id]);
   
   // AI Probabilities Mock
   const probTeam1 = 65;
@@ -31,7 +50,12 @@ export default function MatchPage({ params }: { params: { id: string } }) {
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!msgInput.trim()) return;
-    setChatMessages([...chatMessages, { id: Date.now(), user: "You", text: msgInput, time: "Now" }]);
+
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      socket.send(JSON.stringify({ user: "You", text: msgInput }));
+      setMessages(prev => [...prev, { id: Date.now(), user: "You", text: msgInput, time: "Now" }]);
+    }
+
     setMsgInput("");
   };
   
@@ -142,7 +166,7 @@ export default function MatchPage({ params }: { params: { id: string } }) {
               
               {/* Messages Area */}
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {chatMessages.map(msg => (
+                {messages.map(msg => (
                   <div key={msg.id} className="text-sm">
                     <span className={`font-bold mr-2 ${msg.user === "You" ? "text-[#ff6b00]" : "text-blue-400"}`}>
                       {msg.user}
