@@ -8,6 +8,7 @@ export default function MatchPage({ params }: { params: { id: string } }) {
   const [activeTab, setActiveTab] = useState("Chat");
   const [messages, setMessages] = useState<any[]>([]);
   const [socket, setSocket] = useState<WebSocket | null>(null);
+  const [wsStatus, setWsStatus] = useState("🟡 Connecting...");
   const [msgInput, setMsgInput] = useState("");
 
   const [match, setMatch] = useState<any>(null);
@@ -25,9 +26,13 @@ export default function MatchPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     if (!params?.id) return;
 
+    setWsStatus("🟡 Connecting...");
     const ws = new WebSocket(`wss://sportshub-hjro.onrender.com/ws/match/${params.id}`);
 
-    ws.onopen = () => console.log("✅ WS connected");
+    ws.onopen = () => {
+      console.log("✅ WS connected");
+      setWsStatus("🟢 Connected");
+    };
 
     ws.onmessage = (event) => {
       setMessages((prev) => [
@@ -40,7 +45,15 @@ export default function MatchPage({ params }: { params: { id: string } }) {
       ]);
     };
 
-    ws.onerror = (err) => console.error("WS error:", err);
+    ws.onerror = (err) => {
+      console.error("WS error:", err);
+      setWsStatus("🔴 Error connecting");
+    };
+
+    ws.onclose = () => {
+      console.log("WS closed");
+      setWsStatus("⚪ Disconnected");
+    };
 
     setSocket(ws);
 
@@ -62,9 +75,10 @@ export default function MatchPage({ params }: { params: { id: string } }) {
         ...prev,
         { id: Date.now(), user: "You", text: msgInput }
       ]);
+      setMsgInput("");
+    } else {
+      alert(`Cannot send message. WebSocket is currently: ${wsStatus}`);
     }
-
-    setMsgInput("");
   };
   
   if (!match) return <div className="p-10">Loading...</div>;
@@ -167,9 +181,13 @@ export default function MatchPage({ params }: { params: { id: string } }) {
 
           {activeTab === "Chat" && (
             <div className="glass rounded-xl flex flex-col h-[500px]">
-              <div className="p-4 border-b border-white/5 font-bold flex items-center gap-2 text-sm">
-                <span className="w-2 h-2 rounded-full bg-green-500" />
-                Live Match Chat
+              <div className="p-4 border-b border-white/5 font-bold flex items-center justify-between text-sm">
+                <div className="flex items-center gap-2">
+                  <MessageSquare size={16} /> Live Match Chat
+                </div>
+                <div className="text-xs text-slate-400 bg-white/5 px-2 py-1 rounded-full">
+                  {wsStatus}
+                </div>
               </div>
               
               {/* Messages Area */}
