@@ -18,7 +18,7 @@ export default function MatchPage({ params }: { params: any }) {
   const [msgInput, setMsgInput] = useState("");
   const [username, setUsername] = useState("Guest");
   const myMessages = useRef<Set<string>>(new Set());
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let storedName = localStorage.getItem("chatUsername");
@@ -30,7 +30,12 @@ export default function MatchPage({ params }: { params: any }) {
   }, []);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth"
+      });
+    }
   }, [messages]);
 
   const [match, setMatch] = useState<any>(null);
@@ -231,7 +236,7 @@ export default function MatchPage({ params }: { params: any }) {
               </div>
               
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map(msg => (
                   <div key={msg.id} className="text-sm">
                     {msg.user !== "System" && (
@@ -244,7 +249,6 @@ export default function MatchPage({ params }: { params: any }) {
                     </span>
                   </div>
                 ))}
-                <div ref={messagesEndRef} />
               </div>
 
               {/* Input Area */}
