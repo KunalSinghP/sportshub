@@ -16,8 +16,18 @@ export default function MatchPage({ params }: { params: any }) {
   const [socket, setSocket] = useState<WebSocket | null>(null);
   const [wsStatus, setWsStatus] = useState("🟡 Connecting...");
   const [msgInput, setMsgInput] = useState("");
+  const [username, setUsername] = useState("Guest");
   const myMessages = useRef<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let storedName = localStorage.getItem("chatUsername");
+    if (!storedName) {
+      storedName = prompt("Enter your chat username:") || `User${Math.floor(Math.random() * 10000)}`;
+      localStorage.setItem("chatUsername", storedName);
+    }
+    setUsername(storedName);
+  }, []);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -57,12 +67,17 @@ export default function MatchPage({ params }: { params: any }) {
         return; // Skip our own message since we optimistically added it
       }
 
+      const receivedText = event.data;
+      const splitIndex = receivedText.indexOf(":");
+      const messageUser = splitIndex > -1 ? receivedText.substring(0, splitIndex) : "User";
+      const messageText = splitIndex > -1 ? receivedText.substring(splitIndex + 1).trim() : receivedText;
+
       setMessages((prev) => [
         ...prev,
         {
           id: Date.now() + Math.random(),
-          user: "User",
-          text: event.data
+          user: messageUser,
+          text: messageText
         }
       ]);
     };
@@ -91,8 +106,9 @@ export default function MatchPage({ params }: { params: any }) {
     if (!msgInput.trim()) return;
 
     if (socket && socket.readyState === WebSocket.OPEN) {
-      myMessages.current.add(msgInput); // Track that we sent this
-      socket.send(msgInput); // ✅ FIXED (NO JSON)
+      const fullMessage = `${username}: ${msgInput}`;
+      myMessages.current.add(fullMessage); // Track that we sent this
+      socket.send(fullMessage); // ✅ FIXED (NO JSON)
 
       setMessages((prev) => [
         ...prev,
