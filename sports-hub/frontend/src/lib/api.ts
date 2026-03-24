@@ -1,1 +1,1 @@
-export const API = " https://sportshub-hjro.onrender.com"
+export const API = "https://sportshub-hjro.onrender.com";
