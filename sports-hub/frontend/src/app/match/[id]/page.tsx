@@ -17,6 +17,11 @@ export default function MatchPage({ params }: { params: any }) {
   const [wsStatus, setWsStatus] = useState("🟡 Connecting...");
   const [msgInput, setMsgInput] = useState("");
   const myMessages = useRef<Set<string>>(new Set());
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const [match, setMatch] = useState<any>(null);
 
@@ -214,6 +219,7 @@ export default function MatchPage({ params }: { params: any }) {
                     <span className="text-slate-300">{msg.text}</span>
                   </div>
                 ))}
+                <div ref={messagesEndRef} />
               </div>
 
               {/* Input Area */}
