@@ -49,16 +49,17 @@ export default function MatchPage({ params }: { params: any }) {
   useEffect(() => {
     if (!matchId) return;
 
+    const currentUsername = localStorage.getItem("chatUsername") || "Guest";
+
     setWsStatus("🟡 Connecting...");
     const ws = new WebSocket(`wss://sportshub-hjro.onrender.com/ws/match/${matchId}`);
 
     ws.onopen = () => {
       console.log("✅ WS connected");
       setWsStatus("🟢 Connected");
-      setMessages(prev => [
-        ...prev,
-        { id: Date.now(), user: "System", text: "User joined the match" }
-      ]);
+      
+      // Broadcast join message to everyone
+      ws.send(`System: ${currentUsername} joined the match`);
     };
 
     ws.onmessage = (event) => {
