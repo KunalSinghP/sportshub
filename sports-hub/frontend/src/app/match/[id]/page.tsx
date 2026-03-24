@@ -23,24 +23,28 @@ export default function MatchPage({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   useEffect(() => {
+    if (!params?.id) return;
+
     const ws = new WebSocket(`wss://sportshub-hjro.onrender.com/ws/match/${params.id}`);
+
+    ws.onopen = () => console.log("✅ WS connected");
 
     ws.onmessage = (event) => {
       setMessages((prev) => [
         ...prev,
-        { id: Date.now() + Math.random(), user: "User", text: event.data }
+        {
+          id: Date.now() + Math.random(),
+          user: "User",
+          text: event.data
+        }
       ]);
     };
 
-    ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-    };
+    ws.onerror = (err) => console.error("WS error:", err);
 
     setSocket(ws);
 
-    return () => {
-      ws.close();
-    };
+    return () => ws.close();
   }, [params.id]);
   
   // AI Probabilities Mock
@@ -52,8 +56,12 @@ export default function MatchPage({ params }: { params: { id: string } }) {
     if (!msgInput.trim()) return;
 
     if (socket && socket.readyState === WebSocket.OPEN) {
-      socket.send(JSON.stringify({ user: "You", text: msgInput }));
-      setMessages(prev => [...prev, { id: Date.now(), user: "You", text: msgInput, time: "Now" }]);
+      socket.send(msgInput); // ✅ FIXED (NO JSON)
+
+      setMessages((prev) => [
+        ...prev,
+        { id: Date.now(), user: "You", text: msgInput }
+      ]);
     }
 
     setMsgInput("");

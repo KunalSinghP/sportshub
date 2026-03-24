@@ -31,22 +31,17 @@ app.include_router(posts.router)
 
 @app.websocket("/ws/match/{match_id}")
 async def match_websocket_endpoint(websocket: WebSocket, match_id: int):
-    await websocket.accept()  # ✅ REQUIRED
-
+    # manager.connect() already calls await websocket.accept() internally
     await manager.connect(match_id, websocket)
 
     try:
         while True:
             data = await websocket.receive_text()
 
-            msg_payload = {
-                "user": "User",
-                "text": data
-            }
-
+            # Broadcasting raw text as requested by frontend Option A
             await manager.broadcast_to_match(
                 match_id,
-                json.dumps(msg_payload)
+                data
             )
 
     except WebSocketDisconnect:
