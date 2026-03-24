@@ -4,7 +4,13 @@ import { useState, useEffect } from "react";
 import { ArrowLeft, MessageSquare, PieChart, Activity, Zap, Send } from "lucide-react";
 import Link from "next/link";
 
-export default function MatchPage({ params }: { params: { id: string } }) {
+export default function MatchPage({ params }: { params: any }) {
+  const [matchId, setMatchId] = useState<string | null>(null);
+
+  useEffect(() => {
+    Promise.resolve(params).then((p) => setMatchId(p?.id));
+  }, [params]);
+
   const [activeTab, setActiveTab] = useState("Chat");
   const [messages, setMessages] = useState<any[]>([]);
   const [socket, setSocket] = useState<WebSocket | null>(null);
@@ -14,20 +20,21 @@ export default function MatchPage({ params }: { params: { id: string } }) {
   const [match, setMatch] = useState<any>(null);
 
   useEffect(() => {
+    if (!matchId) return;
     async function fetchMatch() {
-      const res = await fetch(`${API}/matches/${params.id}`);
+      const res = await fetch(`${API}/matches/${matchId}`);
       const data = await res.json();
       setMatch(data);
     }
 
     fetchMatch();
-  }, [params.id]);
+  }, [matchId]);
 
   useEffect(() => {
-    if (!params?.id) return;
+    if (!matchId) return;
 
     setWsStatus("🟡 Connecting...");
-    const ws = new WebSocket(`wss://sportshub-hjro.onrender.com/ws/match/${params.id}`);
+    const ws = new WebSocket(`wss://sportshub-hjro.onrender.com/ws/match/${matchId}`);
 
     ws.onopen = () => {
       console.log("✅ WS connected");
@@ -58,7 +65,7 @@ export default function MatchPage({ params }: { params: { id: string } }) {
     setSocket(ws);
 
     return () => ws.close();
-  }, [params.id]);
+  }, [matchId]);
   
   // AI Probabilities Mock
   const probTeam1 = 65;
