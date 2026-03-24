@@ -46,3 +46,12 @@ def create_prediction(match_id: int, prediction_team: str, db: Session = Depends
     db.commit()
     db.refresh(db_prediction)
     return db_prediction
+
+@router.get("/{match_id}/messages", response_model=List[schemas.MatchMessage])
+def read_match_messages(match_id: int, db: Session = Depends(get_db)):
+    match = db.query(models.Match).filter(models.Match.id == match_id).first()
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+        
+    messages = db.query(models.MatchMessage).filter(models.MatchMessage.match_id == match_id).order_by(models.MatchMessage.created_at.asc()).limit(50).all()
+    return messages

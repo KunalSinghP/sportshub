@@ -54,53 +54,77 @@ export default function MatchPage({ params }: { params: any }) {
   useEffect(() => {
     if (!matchId) return;
 
+    let ws: WebSocket | null = null;
     const currentUsername = localStorage.getItem("chatUsername") || "Guest";
 
-    setWsStatus("🟡 Connecting...");
-    const ws = new WebSocket(`wss://sportshub-hjro.onrender.com/ws/match/${matchId}`);
-
-    ws.onopen = () => {
-      console.log("✅ WS connected");
-      setWsStatus("🟢 Connected");
-      
-      // Broadcast join message to everyone
-      ws.send(`System: ${currentUsername} joined the match`);
-    };
-
-    ws.onmessage = (event) => {
-      if (myMessages.current.has(event.data)) {
-        myMessages.current.delete(event.data);
-        return; // Skip our own message since we optimistically added it
+    async function initChat() {
+      setWsStatus("🟡 Loading History...");
+      try {
+        const res = await fetch(`${API}/matches/${matchId}/messages`);
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setMessages(data.map((msg: any) => ({
+              id: msg.id,
+              user: msg.username,
+              text: msg.text
+            })));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load chat history", err);
       }
 
-      const receivedText = event.data;
-      const splitIndex = receivedText.indexOf(":");
-      const messageUser = splitIndex > -1 ? receivedText.substring(0, splitIndex) : "User";
-      const messageText = splitIndex > -1 ? receivedText.substring(splitIndex + 1).trim() : receivedText;
+      setWsStatus("🟡 Connecting...");
+      ws = new WebSocket(`wss://sportshub-hjro.onrender.com/ws/match/${matchId}`);
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: Date.now() + Math.random(),
-          user: messageUser,
-          text: messageText
+      ws.onopen = () => {
+        console.log("✅ WS connected");
+        setWsStatus("🟢 Connected");
+        
+        // Broadcast join message to everyone
+        ws?.send(`System: ${currentUsername} joined the match`);
+      };
+
+      ws.onmessage = (event) => {
+        if (myMessages.current.has(event.data)) {
+          myMessages.current.delete(event.data);
+          return; // Skip our own message since we optimistically added it
         }
-      ]);
+
+        const receivedText = event.data;
+        const splitIndex = receivedText.indexOf(":");
+        const messageUser = splitIndex > -1 ? receivedText.substring(0, splitIndex) : "User";
+        const messageText = splitIndex > -1 ? receivedText.substring(splitIndex + 1).trim() : receivedText;
+
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: Date.now() + Math.random(),
+            user: messageUser,
+            text: messageText
+          }
+        ]);
+      };
+
+      ws.onerror = (err) => {
+        console.error("WS error:", err);
+        setWsStatus("🔴 Error connecting");
+      };
+
+      ws.onclose = () => {
+        console.log("WS closed");
+        setWsStatus("⚪ Disconnected");
+      };
+
+      setSocket(ws);
+    }
+
+    initChat();
+
+    return () => {
+      ws?.close();
     };
-
-    ws.onerror = (err) => {
-      console.error("WS error:", err);
-      setWsStatus("🔴 Error connecting");
-    };
-
-    ws.onclose = () => {
-      console.log("WS closed");
-      setWsStatus("⚪ Disconnected");
-    };
-
-    setSocket(ws);
-
-    return () => ws.close();
   }, [matchId]);
   
   // AI Probabilities Mock

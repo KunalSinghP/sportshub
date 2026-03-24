@@ -76,3 +76,14 @@ class Prediction(Base):
     
     user = relationship("User", back_populates="predictions")
     match = relationship("Match", back_populates="predictions")
+
+class MatchMessage(Base):
+    __tablename__ = "match_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    match_id = Column(Integer, ForeignKey("matches.id"))
+    username = Column(String)
+    text = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    match = relationship("Match")

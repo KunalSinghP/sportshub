@@ -89,3 +89,18 @@ class Community(CommunityBase):
     
     class Config:
         from_attributes = True
+
+class MatchMessageBase(BaseModel):
+    username: str
+    text: str
+
+class MatchMessageCreate(MatchMessageBase):
+    pass
+
+class MatchMessage(MatchMessageBase):
+    id: int
+    match_id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True

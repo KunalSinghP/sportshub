@@ -1,6 +1,7 @@
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from database import engine
+from sqlalchemy.orm import Session
+from database import engine, get_db
 from models import models
 from routers import auth, communities, matches, ai, posts
 from ws.manager import manager
@@ -30,13 +31,27 @@ app.include_router(ai.router)
 app.include_router(posts.router)
 
 @app.websocket("/ws/match/{match_id}")
-async def match_websocket_endpoint(websocket: WebSocket, match_id: int):
+async def match_websocket_endpoint(websocket: WebSocket, match_id: int, db: Session = Depends(get_db)):
     # manager.connect() already calls await websocket.accept() internally
     await manager.connect(match_id, websocket)
 
     try:
         while True:
             data = await websocket.receive_text()
+
+            # Parse structural payload to store independently
+            split_index = data.find(":")
+            if split_index > -1:
+                username = data[:split_index]
+                text = data[split_index+1:].strip()
+            else:
+                username = "System" if data.startswith("System") else "User"
+                text = data
+
+            # Commit to database persistence
+            new_msg = models.MatchMessage(match_id=match_id, username=username, text=text)
+            db.add(new_msg)
+            db.commit()
 
             # Broadcasting raw text as requested by frontend Option A
             await manager.broadcast_to_match(
