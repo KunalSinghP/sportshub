@@ -234,12 +234,11 @@ export default function MatchPage({ params }: { params: any }) {
               <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {messages.map(msg => (
                   <div key={msg.id} className="text-sm">
-                    <span className={`font-bold mr-2 ${
-                      msg.user === "You" ? "text-[#ff6b00]" : 
-                      msg.user === "System" ? "text-green-500" : "text-blue-400"
-                    }`}>
-                      {msg.user}
-                    </span>
+                    {msg.user !== "System" && (
+                      <span className={`font-bold mr-2 ${msg.user === "You" ? "text-[#ff6b00]" : "text-blue-400"}`}>
+                        {msg.user}
+                      </span>
+                    )}
                     <span className={msg.user === "System" ? "text-green-500/80 italic" : "text-slate-300"}>
                       {msg.text}
                     </span>
