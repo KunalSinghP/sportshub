@@ -23,7 +23,7 @@ export default function MatchPage({ params }: { params: { id: string } }) {
   }, [params.id]);
 
   useEffect(() => {
-    const ws = new WebSocket(`wss://sportshub-njro.onrender.com/ws/match/${params.id}`);
+    const ws = new WebSocket(`wss://sportshub-hjro.onrender.com/ws/match/${params.id}`);
 
     ws.onmessage = (event) => {
       setMessages((prev) => [
