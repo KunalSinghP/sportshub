@@ -171,10 +171,10 @@ export default function MatchPage({ params }: { params: any }) {
         
         <div className="flex h-3 rounded-full overflow-hidden bg-slate-800">
           <div style={{ width: `${probTeam1}%` }} className="bg-blue-500 transition-all duration-1000 relative">
-            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold">ARS {probTeam1}%</span>
+            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold">{match.team1?.substring(0,3).toUpperCase()} {probTeam1}%</span>
           </div>
           <div style={{ width: `${probTeam2}%` }} className="bg-red-500 transition-all duration-1000 relative">
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold">LIV {probTeam2}%</span>
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold">{match.team2?.substring(0,3).toUpperCase()} {probTeam2}%</span>
           </div>
         </div>
       </div>
@@ -214,7 +214,7 @@ export default function MatchPage({ params }: { params: any }) {
                 <Zap size={16} /> AI Match Analyst Insight
               </h3>
               <p className="text-sm text-slate-300 leading-relaxed">
-                Based on recent historical data, the home team holds a slight advantage in possession. Their pressing strategy has consistently forced turnovers in the mid-field. The AI predicts a tight defensive battle.
+                Based on the pitch report and historical data, the home team holds a slight advantage chasing. Their spinners have consistently restricted runs in the middle overs. The AI predicts a high-scoring thriller.
               </p>
             </div>
           </div>
@@ -274,13 +274,13 @@ export default function MatchPage({ params }: { params: any }) {
               
               <div className="flex gap-4 justify-center">
                 <button className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:border-blue-500">
-                  Arsenal
+                  {match.team1}
                 </button>
                 <button className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:border-slate-500">
-                  Draw
+                  Tie
                 </button>
                 <button className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:border-red-500">
-                  Liverpool
+                  {match.team2}
                 </button>
               </div>
             </div>
@@ -293,16 +293,16 @@ export default function MatchPage({ params }: { params: any }) {
             <h3 className="font-bold mb-4">Match Info</h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-400">Competition</span>
-                <span className="font-semibold">Premier League</span>
+                <span className="text-slate-400">Tournament</span>
+                <span className="font-semibold">Indian Premier League</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">Venue</span>
-                <span className="font-semibold">Emirates Stadium</span>
+                <span className="font-semibold">Wankhede Stadium</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Referee</span>
-                <span className="font-semibold">Michael Oliver</span>
+                <span className="text-slate-400">Umpire</span>
+                <span className="font-semibold">Nitin Menon</span>
               </div>
             </div>
           </div>
