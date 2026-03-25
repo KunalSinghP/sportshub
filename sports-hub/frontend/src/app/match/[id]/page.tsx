@@ -45,6 +45,26 @@ export default function MatchPage({ params }: { params: any }) {
   }, [messages]);
 
   const [match, setMatch] = useState<any>(null);
+  const [predictedTeam, setPredictedTeam] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!matchId) return;
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+
+    async function fetchUserPrediction() {
+      try {
+        const res = await fetch(`${API}/predictions/${matchId}/${userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          setPredictedTeam(data.predicted_winner);
+        }
+      } catch (err) {
+        console.error("Failed to fetch user prediction", err);
+      }
+    }
+    fetchUserPrediction();
+  }, [matchId]);
 
   useEffect(() => {
     if (!matchId) return;
@@ -173,6 +193,7 @@ export default function MatchPage({ params }: { params: any }) {
         })
       });
       if (res.ok) {
+        setPredictedTeam(team);
         alert(`Successfully predicted: ${team}`);
       } else {
         const errorData = await res.json().catch(() => null);
@@ -331,23 +352,47 @@ export default function MatchPage({ params }: { params: any }) {
 
           {activeTab === "Predictions" && (
             <div className="glass rounded-xl p-8 text-center">
-              <h3 className="text-2xl font-bold mb-2">Who will win?</h3>
-              <p className="text-slate-400 mb-8">Cast your vote to climb the global leaderboard!</p>
+              <h3 className="text-2xl font-bold mb-2">
+                {predictedTeam ? `You predicted: ${predictedTeam}` : "Who will win?"}
+              </h3>
+              <p className="text-slate-400 mb-8">
+                {predictedTeam 
+                  ? "Your prediction is locked! Wait for the match to end to see the results."
+                  : "Cast your vote to climb the global leaderboard!"}
+              </p>
               
               <div className="flex gap-4 justify-center">
                 <button 
                   onClick={() => handlePredict(match.team1)}
-                  className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:border-blue-500">
+                  disabled={!!predictedTeam}
+                  className={`flex-1 border p-4 rounded-xl font-bold text-lg transition-all 
+                    ${predictedTeam === match.team1 
+                      ? "bg-blue-500/20 border-blue-500 text-blue-400 opacity-100" 
+                      : predictedTeam 
+                        ? "bg-white/5 border-white/10 opacity-50 cursor-not-allowed"
+                        : "bg-white/5 hover:bg-white/10 border-white/10 hover:scale-105 hover:border-blue-500"}`}>
                   {match.team1}
                 </button>
                 <button 
                   onClick={() => handlePredict("Tie")}
-                  className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:border-slate-500">
+                  disabled={!!predictedTeam}
+                  className={`flex-1 border p-4 rounded-xl font-bold text-lg transition-all 
+                    ${predictedTeam === "Tie" 
+                      ? "bg-slate-500/20 border-slate-500 text-slate-400 opacity-100" 
+                      : predictedTeam 
+                        ? "bg-white/5 border-white/10 opacity-50 cursor-not-allowed"
+                        : "bg-white/5 hover:bg-white/10 border-white/10 hover:scale-105 hover:border-slate-500"}`}>
                   Tie
                 </button>
                 <button 
                   onClick={() => handlePredict(match.team2)}
-                  className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:border-red-500">
+                  disabled={!!predictedTeam}
+                  className={`flex-1 border p-4 rounded-xl font-bold text-lg transition-all 
+                    ${predictedTeam === match.team2 
+                      ? "bg-red-500/20 border-red-500 text-red-400 opacity-100" 
+                      : predictedTeam 
+                        ? "bg-white/5 border-white/10 opacity-50 cursor-not-allowed"
+                        : "bg-white/5 hover:bg-white/10 border-white/10 hover:scale-105 hover:border-red-500"}`}>
                   {match.team2}
                 </button>
               </div>

@@ -40,6 +40,16 @@ def create_prediction(prediction: schemas.PredictionGuestCreate, db: Session = D
         db.refresh(db_prediction)
         return db_prediction
 
+@router.get("/predictions/{match_id}/{user_id}", response_model=schemas.Prediction)
+def get_user_prediction(match_id: int, user_id: str, db: Session = Depends(get_db)):
+    prediction = db.query(models.Prediction).filter(
+        models.Prediction.match_id == match_id,
+        models.Prediction.user_id == user_id
+    ).first()
+    if not prediction:
+        raise HTTPException(status_code=404, detail="Prediction not found")
+    return prediction
+
 @router.post("/resolve_match")
 def resolve_match(match_id: int, winner: str, db: Session = Depends(get_db)):
     """
