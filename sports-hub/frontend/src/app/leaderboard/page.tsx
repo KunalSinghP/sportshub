@@ -2,17 +2,36 @@
 
 import { Trophy, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { API } from "@/lib/api";
 
 export default function LeaderboardPage() {
-  const mockUsers = [
-    { rank: 1, name: "OracleSports", accuracy: 82.5, total: 142, trend: "up" },
-    { rank: 2, name: "prophet_101", accuracy: 78.3, total: 89, trend: "up" },
-    { rank: 3, name: "analytic_mind", accuracy: 75.1, total: 210, trend: "down" },
-    { rank: 4, name: "lucky_guesser", accuracy: 72.8, total: 45, trend: "same" },
-    { rank: 5, name: "stats_nerd", accuracy: 70.4, total: 312, trend: "up" },
-    { rank: 6, name: "sports_fan99", accuracy: 68.9, total: 110, trend: "down" },
-    { rank: 7, name: "weekend_warrior", accuracy: 65.2, total: 25, trend: "same" },
-  ];
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchLeaderboard() {
+      try {
+        const res = await fetch(`${API}/leaderboard`);
+        if (res.ok) {
+          const data = await res.json();
+          const formatted = data.map((item: any, idx: number) => ({
+            rank: idx + 1,
+            name: item.username,
+            accuracy: item.accuracy,
+            total: item.total_predictions,
+            trend: "same"
+          }));
+          setUsers(formatted);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchLeaderboard();
+  }, []);
 
   const getMedalColor = (rank: number) => {
     switch (rank) {
@@ -36,25 +55,27 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Top 3 Podium */}
-      <div className="flex justify-center items-end gap-4 mb-12 h-48">
-        {[
-          { ...mockUsers[1], height: "h-32", bg: "from-zinc-400 to-zinc-600" },
-          { ...mockUsers[0], height: "h-40", bg: "from-yellow-400 to-yellow-600" },
-          { ...mockUsers[2], height: "h-28", bg: "from-amber-600 to-amber-800" },
-        ].map(user => (
-          <div key={user.rank} className="flex flex-col items-center w-28 group">
-            <Link href={`/profile/${user.name}`} className="font-bold text-sm mb-1 group-hover:text-[#ff6b00] transition-colors truncate w-full text-center">
-              {user.name}
-            </Link>
-            <span className="text-xs text-slate-400 mb-2">{user.accuracy}%</span>
-            <div className={`w-full ${user.height} bg-gradient-to-b ${user.bg} rounded-t-lg border-t-2 border-white/20 flex justify-center pt-2 shadow-2xl relative overflow-hidden`}>
-              {/* Shine effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent w-full h-full pointer-events-none" />
-              <span className="text-xl font-black font-mono text-black/40">{user.rank}</span>
+      {users.length >= 3 && (
+        <div className="flex justify-center items-end gap-4 mb-12 h-48">
+          {[
+            { ...users[1], height: "h-32", bg: "from-zinc-400 to-zinc-600" },
+            { ...users[0], height: "h-40", bg: "from-yellow-400 to-yellow-600" },
+            { ...users[2], height: "h-28", bg: "from-amber-600 to-amber-800" },
+          ].map(user => (
+            <div key={user.rank} className="flex flex-col items-center w-28 group">
+              <Link href={`/profile/${user.name}`} className="font-bold text-sm mb-1 group-hover:text-[#ff6b00] transition-colors truncate w-full text-center">
+                {user.name}
+              </Link>
+              <span className="text-xs text-slate-400 mb-2">{user.accuracy}%</span>
+              <div className={`w-full ${user.height} bg-gradient-to-b ${user.bg} rounded-t-lg border-t-2 border-white/20 flex justify-center pt-2 shadow-2xl relative overflow-hidden`}>
+                {/* Shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent w-full h-full pointer-events-none" />
+                <span className="text-xl font-black font-mono text-black/40">{user.rank}</span>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Leaderboard Table */}
       <div className="glass rounded-xl overflow-hidden">
@@ -68,7 +89,13 @@ export default function LeaderboardPage() {
             </tr>
           </thead>
           <tbody>
-            {mockUsers.map((user, idx) => (
+            {loading && (
+              <tr><td colSpan={4} className="p-4 text-center text-slate-400">Loading...</td></tr>
+            )}
+            {!loading && users.length === 0 && (
+              <tr><td colSpan={4} className="p-4 text-center text-slate-400">No predictions yet.</td></tr>
+            )}
+            {!loading && users.map((user, idx) => (
               <tr key={user.rank} className="border-b border-white/5 hover:bg-white/5 transition-colors group">
                 <td className="p-4 text-center">
                   <span className={`font-black font-mono text-lg ${getMedalColor(user.rank)}`}>

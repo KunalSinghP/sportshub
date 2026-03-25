@@ -12,7 +12,6 @@ class User(Base):
     
     posts = relationship("Post", back_populates="author")
     comments = relationship("Comment", back_populates="author")
-    predictions = relationship("Prediction", back_populates="user")
 
 class Community(Base):
     __tablename__ = "communities"
@@ -69,12 +68,12 @@ class Prediction(Base):
     __tablename__ = "predictions"
 
     id = Column(Integer, primary_key=True, index=True)
-    predicted_winner = Column(String) # team1 or team2
-    
-    user_id = Column(Integer, ForeignKey("users.id"))
     match_id = Column(Integer, ForeignKey("matches.id"))
+    user_id = Column(String)
+    username = Column(String)
+    predicted_winner = Column(String) # team1 or team2
+    is_correct = Column(Boolean, default=None)
     
-    user = relationship("User", back_populates="predictions")
     match = relationship("Match", back_populates="predictions")
 
 class MatchMessage(Base):

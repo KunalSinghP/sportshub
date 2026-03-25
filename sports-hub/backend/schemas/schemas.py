@@ -48,19 +48,28 @@ class Post(PostBase):
     class Config:
         from_attributes = True
 
-class PredictionBase(BaseModel):
-    predicted_winner: str
+class PredictionGuestCreate(BaseModel):
     match_id: int
+    user_id: str
+    username: str
+    predicted_winner: str
 
-class PredictionCreate(PredictionBase):
-    pass
-
-class Prediction(PredictionBase):
+class Prediction(BaseModel):
     id: int
-    user_id: int
+    match_id: int
+    user_id: str
+    username: str
+    predicted_winner: str
+    is_correct: Optional[bool] = None
     
     class Config:
         from_attributes = True
+
+class LeaderboardEntry(BaseModel):
+    username: str
+    total_predictions: int
+    correct_predictions: int
+    accuracy: float
 
 class CommentBase(BaseModel):
     content: str

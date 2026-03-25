@@ -27,6 +27,12 @@ export default function MatchPage({ params }: { params: any }) {
       localStorage.setItem("chatUsername", storedName);
     }
     setUsername(storedName);
+
+    let storedUserId = localStorage.getItem("userId");
+    if (!storedUserId) {
+      storedUserId = `uid_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      localStorage.setItem("userId", storedUserId);
+    }
   }, []);
 
   useEffect(() => {
@@ -147,6 +153,33 @@ export default function MatchPage({ params }: { params: any }) {
       setMsgInput("");
     } else {
       alert(`Cannot send message. WebSocket is currently: ${wsStatus}`);
+    }
+  };
+
+  const handlePredict = async (team: string) => {
+    if (!matchId) return;
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+    
+    try {
+      const res = await fetch(`${API}/predict`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          match_id: parseInt(matchId),
+          user_id: userId,
+          username,
+          predicted_winner: team
+        })
+      });
+      if (res.ok) {
+        alert(`Successfully predicted: ${team}`);
+      } else {
+        alert("Failed to save prediction.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error predicting winner.");
     }
   };
   
@@ -301,13 +334,19 @@ export default function MatchPage({ params }: { params: any }) {
               <p className="text-slate-400 mb-8">Cast your vote to climb the global leaderboard!</p>
               
               <div className="flex gap-4 justify-center">
-                <button className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:border-blue-500">
+                <button 
+                  onClick={() => handlePredict(match.team1)}
+                  className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:border-blue-500">
                   {match.team1}
                 </button>
-                <button className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:border-slate-500">
+                <button 
+                  onClick={() => handlePredict("Tie")}
+                  className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:border-slate-500">
                   Tie
                 </button>
-                <button className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:border-red-500">
+                <button 
+                  onClick={() => handlePredict(match.team2)}
+                  className="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 p-4 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:border-red-500">
                   {match.team2}
                 </button>
               </div>

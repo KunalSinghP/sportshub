@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import engine, get_db
 from models import models
-from routers import auth, communities, matches, ai, posts
+from routers import auth, communities, matches, ai, posts, predictions
 from ws.manager import manager
 import json
 from fastapi.middleware.cors import CORSMiddleware
@@ -29,6 +29,7 @@ app.include_router(communities.router)
 app.include_router(matches.router)
 app.include_router(ai.router)
 app.include_router(posts.router)
+app.include_router(predictions.router)
 
 @app.websocket("/ws/match/{match_id}")
 async def match_websocket_endpoint(websocket: WebSocket, match_id: int, db: Session = Depends(get_db)):
