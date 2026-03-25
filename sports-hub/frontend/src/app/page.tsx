@@ -2,6 +2,7 @@ import MatchCard from "@/components/MatchCard";
 import PostCard from "@/components/PostCard";
 import { Trophy, TrendingUp } from "lucide-react";
 import { API } from "@/lib/api";
+import Link from "next/link";
 
 export default async function Home() {
 
@@ -30,6 +31,18 @@ export default async function Home() {
 
   // ✅ ensure array
   const mockPosts = Array.isArray(postData) ? postData : [];
+
+  // FETCH LEADERBOARD
+  let topPredictors: any[] = [];
+  try {
+    const lbRes = await fetch(`${API}/leaderboard`, { cache: "no-store" });
+    if (lbRes.ok) {
+      const lbData = await lbRes.json();
+      topPredictors = Array.isArray(lbData) ? lbData.slice(0, 3) : [];
+    }
+  } catch (err) {
+    console.error("Failed to fetch leaderboard", err);
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 flex flex-col lg:flex-row gap-8">
@@ -94,23 +107,29 @@ export default async function Home() {
           </div>
           
           <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex justify-between items-center text-sm">
-                <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center font-bold text-xs">
-                    {i}
+            {topPredictors.length > 0 ? (
+              topPredictors.map((user, idx) => (
+                <div key={idx} className="flex justify-between items-center text-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center font-bold text-xs">
+                      {idx + 1}
+                    </div>
+                    <span className="font-semibold">{user.username}</span>
                   </div>
-                  <span className="font-semibold">User_{i}123</span>
+                  <div className="text-green-400 font-mono">
+                    {user.accuracy}%
+                  </div>
                 </div>
-                <div className="text-green-400 font-mono">
-                  {75 - i * 5}%
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-sm text-slate-400">No predictions yet.</p>
+            )}
           </div>
-          <button className="w-full mt-5 bg-white/5 hover:bg-white/10 py-2 rounded-lg text-sm font-semibold transition-colors">
-            View Leaderboard
-          </button>
+          <Link href="/leaderboard">
+            <button className="w-full mt-5 bg-white/5 hover:bg-white/10 py-2 rounded-lg text-sm font-semibold transition-colors">
+              View Leaderboard
+            </button>
+          </Link>
         </div>
 
         {/* Trending Communities */}
