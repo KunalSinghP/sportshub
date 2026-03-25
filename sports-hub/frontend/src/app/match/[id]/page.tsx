@@ -175,7 +175,8 @@ export default function MatchPage({ params }: { params: any }) {
       if (res.ok) {
         alert(`Successfully predicted: ${team}`);
       } else {
-        alert("Failed to save prediction.");
+        const errorData = await res.json().catch(() => null);
+        alert(errorData?.detail || "Failed to save prediction.");
       }
     } catch (err) {
       console.error(err);

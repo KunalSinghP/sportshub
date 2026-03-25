@@ -25,12 +25,8 @@ def create_prediction(prediction: schemas.PredictionGuestCreate, db: Session = D
     ).first()
     
     if existing_prediction:
-        # Overwrite if exists
-        existing_prediction.predicted_winner = prediction.predicted_winner
-        existing_prediction.username = prediction.username
-        db.commit()
-        db.refresh(existing_prediction)
-        return existing_prediction
+        # Do not allow user to change prediction once already chosen
+        raise HTTPException(status_code=400, detail="You have already cast a prediction for this match.")
     else:
         # Create new prediction
         db_prediction = models.Prediction(
