@@ -13,6 +13,9 @@ export default function CommunityPage({ params }: { params: { name: string } }) 
     const token = localStorage.getItem("sportsHubToken");
     if (!token) {
       e.preventDefault();
+      if ('blur' in e.target) {
+        (e.target as HTMLElement).blur();
+      }
       alert("You must be signed up or logged in to participate in communities!");
       // Optionally redirect: window.location.href = '/login';
     }
