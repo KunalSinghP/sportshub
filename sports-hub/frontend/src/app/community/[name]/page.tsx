@@ -9,6 +9,15 @@ export default function CommunityPage({ params }: { params: { name: string } }) 
   const communityName = decodeURIComponent(params.name).replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase());
   const [activeTab, setActiveTab] = useState("Posts");
 
+  const requireAuthToParticipate = (e: React.MouseEvent | React.FocusEvent) => {
+    const token = localStorage.getItem("sportsHubToken");
+    if (!token) {
+      e.preventDefault();
+      alert("You must be signed up or logged in to participate in communities!");
+      // Optionally redirect: window.location.href = '/login';
+    }
+  };
+
   // Mock
   const mockPosts = [
     {
@@ -53,7 +62,7 @@ export default function CommunityPage({ params }: { params: { name: string } }) 
             <p className="text-slate-400 text-sm mt-1">45.2k Members • 1.2k Online</p>
           </div>
         </div>
-        <button className="mb-2 bg-[#ff6b00] hover:bg-[#e05e00] text-white px-6 py-2 rounded-full font-bold transition-colors">
+        <button onClick={requireAuthToParticipate} className="mb-2 bg-[#ff6b00] hover:bg-[#e05e00] text-white px-6 py-2 rounded-full font-bold transition-colors">
           Join
         </button>
       </div>
@@ -64,6 +73,7 @@ export default function CommunityPage({ params }: { params: { name: string } }) 
           <div className="w-10 h-10 rounded-full bg-slate-700 flex-shrink-0" />
           <input 
             type="text" 
+            onFocus={requireAuthToParticipate}
             placeholder="Create Post" 
             className="flex-1 bg-black/20 border border-white/5 rounded-lg px-4 py-2.5 text-sm hover:border-white/20 focus:border-[#ff6b00] outline-none transition-colors"
           />
