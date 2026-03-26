@@ -106,7 +106,7 @@ export default function ProfilePage() {
         </div>
         <div className="glass rounded-xl p-5 text-center transition-transform hover:scale-105">
           <MessageSquare className="mx-auto text-purple-400 mb-2" size={24} />
-          <div className="text-2xl font-black font-mono">34</div>
+          <div className="text-2xl font-black font-mono">{user.posts?.length || 0}</div>
           <div className="text-xs text-slate-400 uppercase tracking-wider mt-1">Posts</div>
         </div>
       </div>

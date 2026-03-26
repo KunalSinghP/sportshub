@@ -6,13 +6,18 @@ from typing import List
 from database import get_db
 from models import models
 from schemas import schemas
+from routers.auth import get_current_user
 
 router = APIRouter(
     tags=["Predictions"]
 )
 
 @router.post("/predict", response_model=schemas.Prediction)
-def create_prediction(prediction: schemas.PredictionGuestCreate, db: Session = Depends(get_db)):
+def create_prediction(
+    prediction: schemas.PredictionGuestCreate, 
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     # Check if match exists
     match = db.query(models.Match).filter(models.Match.id == prediction.match_id).first()
     if not match:
@@ -21,18 +26,17 @@ def create_prediction(prediction: schemas.PredictionGuestCreate, db: Session = D
     # Check if prediction exists for this user and match
     existing_prediction = db.query(models.Prediction).filter(
         models.Prediction.match_id == prediction.match_id,
-        models.Prediction.user_id == prediction.user_id
+        models.Prediction.user_id == current_user.id
     ).first()
     
     if existing_prediction:
-        # Do not allow user to change prediction once already chosen
         raise HTTPException(status_code=400, detail="You have already cast a prediction for this match.")
     else:
-        # Create new prediction
+        # Force real authenticated ID insertion
         db_prediction = models.Prediction(
             match_id=prediction.match_id,
-            user_id=prediction.user_id,
-            username=prediction.username,
+            user_id=current_user.id,
+            username=current_user.username,
             predicted_winner=prediction.predicted_winner
         )
         db.add(db_prediction)
@@ -40,11 +44,15 @@ def create_prediction(prediction: schemas.PredictionGuestCreate, db: Session = D
         db.refresh(db_prediction)
         return db_prediction
 
-@router.get("/predictions/{match_id}/{user_id}", response_model=schemas.Prediction)
-def get_user_prediction(match_id: int, user_id: str, db: Session = Depends(get_db)):
+@router.get("/predictions/{match_id}/me", response_model=schemas.Prediction)
+def get_user_prediction(
+    match_id: int, 
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     prediction = db.query(models.Prediction).filter(
         models.Prediction.match_id == match_id,
-        models.Prediction.user_id == user_id
+        models.Prediction.user_id == current_user.id
     ).first()
     if not prediction:
         raise HTTPException(status_code=404, detail="Prediction not found")

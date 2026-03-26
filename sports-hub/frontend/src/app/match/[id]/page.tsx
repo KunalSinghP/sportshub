@@ -49,12 +49,16 @@ export default function MatchPage({ params }: { params: any }) {
 
   useEffect(() => {
     if (!matchId) return;
-    const userId = localStorage.getItem("userId");
-    if (!userId) return;
+    const token = localStorage.getItem("sportsHubToken");
+    if (!token) return;
 
     async function fetchUserPrediction() {
       try {
-        const res = await fetch(`${API}/predictions/${matchId}/${userId}`);
+        const res = await fetch(`${API}/predictions/${matchId}/me`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
         if (res.ok) {
           const data = await res.json();
           setPredictedTeam(data.predicted_winner);
@@ -178,26 +182,33 @@ export default function MatchPage({ params }: { params: any }) {
 
   const handlePredict = async (team: string) => {
     if (!matchId) return;
-    const userId = localStorage.getItem("userId");
-    if (!userId) return;
+    
+    const token = localStorage.getItem("sportsHubToken");
+    if (!token) {
+      alert("You must be logged in to make a live prediction!");
+      return;
+    }
     
     try {
       const res = await fetch(`${API}/predict`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({
           match_id: parseInt(matchId),
-          user_id: userId,
-          username,
+          user_id: "secured", // Backend overrides this securely
+          username: username,
           predicted_winner: team
         })
       });
       if (res.ok) {
         setPredictedTeam(team);
-        alert(`Successfully predicted: ${team}`);
+        alert(`Successfully locked in: ${team}! Checked your profile.`);
       } else {
         const errorData = await res.json().catch(() => null);
-        alert(errorData?.detail || "Failed to save prediction.");
+        alert(errorData?.detail || "Failed to successfully lock prediction.");
       }
     } catch (err) {
       console.error(err);
