@@ -1,20 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { User as UserIcon, Settings, Target, MessageSquare, Clock } from "lucide-react";
 import PostCard from "@/components/PostCard";
+import { useRouter } from "next/navigation";
+import { API } from "@/lib/api";
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("Posts");
-  
-  // Mock User
-  const user = {
-    username: "OracleSports",
-    joined: "Aug 2025",
-    accuracy: 82.5,
-    rank: 1,
-    totalPicks: 142
+  const [user, setUser] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const token = localStorage.getItem("sportsHubToken");
+    if (!token) {
+      router.replace("/login");
+      return;
+    }
+
+    async function fetchProfile() {
+      try {
+        const res = await fetch(`${API}/auth/me`, {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (!res.ok) throw new Error("Invalid token");
+
+        const data = await res.json();
+        setUser({
+          username: data.username,
+          joined: "Today",
+          accuracy: 82.5,
+          rank: 1,
+          totalPicks: 142
+        });
+      } catch (error) {
+        localStorage.removeItem("sportsHubToken");
+        router.replace("/login");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    fetchProfile();
+  }, [router]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("sportsHubToken");
+    localStorage.removeItem("chatUsername");
+    router.push("/login");
   };
+
+  if (isLoading || !user) {
+    return (
+      <div className="min-h-[50vh] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-t-2 border-[#ff6b00]"></div>
+      </div>
+    );
+  }
 
   const mockPosts = [
     {
@@ -50,9 +96,14 @@ export default function ProfilePage() {
           </p>
         </div>
         
-        <button className="flex items-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg transition-colors text-sm font-semibold border border-white/10">
-          <Settings size={16} /> Edit Profile
-        </button>
+        <div className="flex flex-col gap-2">
+          <button className="flex items-center justify-center gap-2 bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg transition-colors text-sm font-semibold border border-white/10">
+            <Settings size={16} /> Edit Profile
+          </button>
+          <button onClick={handleLogout} className="flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 px-4 py-2 rounded-lg transition-colors text-sm font-semibold border border-red-500/20">
+            Logout
+          </button>
+        </div>
       </div>
 
       {/* Stats Grid */}
