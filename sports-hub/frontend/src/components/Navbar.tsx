@@ -55,9 +55,9 @@ export default function Navbar() {
               className="bg-[#141a2b] border border-white/10 rounded-full py-1.5 pl-9 pr-4 text-sm w-64 focus:outline-none focus:border-[#ff6b00] transition-colors"
             />
           </div>
-          <button className="flex items-center justify-center h-8 w-8 rounded-full bg-[#141a2b] border border-white/10 hover:border-[#ff6b00] transition-colors">
+          <Link href="/profile" className="flex items-center justify-center h-8 w-8 rounded-full bg-[#141a2b] border border-white/10 hover:border-[#ff6b00] transition-colors">
             <User size={16} />
-          </button>
+          </Link>
         </div>
       </nav>
 
@@ -80,10 +80,10 @@ export default function Navbar() {
               </Link>
             );
           })}
-          <button className="flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-400">
+          <Link href="/profile" className="flex flex-col items-center justify-center w-full h-full space-y-1 text-slate-400 hover:text-[#ff6b00] transition-colors">
             <User size={20} />
             <span className="text-[10px] font-medium">Profile</span>
-          </button>
+          </Link>
         </div>
       </nav>
     </>
