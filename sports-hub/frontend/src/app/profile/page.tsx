@@ -21,7 +21,7 @@ export default function ProfilePage() {
 
     async function fetchProfile() {
       try {
-        const res = await fetch(`${API}/auth/me`, {
+        const res = await fetch(`${API}/auth/me/profile`, {
           headers: {
             "Authorization": `Bearer ${token}`
           }
@@ -30,13 +30,7 @@ export default function ProfilePage() {
         if (!res.ok) throw new Error("Invalid token");
 
         const data = await res.json();
-        setUser({
-          username: data.username,
-          joined: "Today",
-          accuracy: 82.5,
-          rank: 1,
-          totalPicks: 142
-        });
+        setUser(data);
       } catch (error) {
         localStorage.removeItem("sportsHubToken");
         router.replace("/login");
@@ -61,19 +55,6 @@ export default function ProfilePage() {
       </div>
     );
   }
-
-  const mockPosts = [
-    {
-      id: 5,
-      title: "How I hit an 80% accuracy rate this season",
-      content: "It mostly comes down to ignoring emotional biases and heavily weighting recent away performance metrics...",
-      authorName: user.username,
-      communityName: "Sports Analytics",
-      upvotes: 412,
-      commentCount: 89,
-      timeAgo: "2 days ago"
-    }
-  ];
 
   return (
     <div className="max-w-4xl mx-auto pb-8 p-4">
@@ -131,7 +112,7 @@ export default function ProfilePage() {
       </div>
 
       {/* Content Tabs */}
-      <div className="flex gap-6 border-b border-white/10 mb-6 px-2">
+      <div className="flex gap-6 border-b border-white/10 mb-6 px-2 overflow-x-auto whitespace-nowrap">
         {["Posts", "Comments", "Prediction History"].map((tab) => (
           <button
             key={tab}
@@ -151,12 +132,12 @@ export default function ProfilePage() {
       {/* Tab Content */}
       {activeTab === "Posts" && (
         <div className="space-y-4">
-          {mockPosts.map(post => (
+          {user?.posts?.map((post: any) => (
             <PostCard key={post.id} {...post} />
           ))}
-          {mockPosts.length === 0 && (
-             <div className="py-12 text-center text-slate-500">
-               No posts yet
+          {(!user?.posts || user.posts.length === 0) && (
+             <div className="py-12 text-center text-slate-500 font-semibold border border-dashed border-white/5 rounded-xl">
+               You haven't made any Community Posts yet!
              </div>
           )}
         </div>
@@ -165,24 +146,32 @@ export default function ProfilePage() {
       {activeTab === "Prediction History" && (
         <div className="glass rounded-xl overflow-hidden p-2">
            <table className="w-full text-left text-sm">
-              <thead className="text-slate-500 border-b border-white/5">
+              <thead className="text-slate-400 border-b border-white/5 bg-white/5">
                 <tr>
-                  <th className="p-3">Match</th>
-                  <th className="p-3">Prediction</th>
-                  <th className="p-3 text-right">Result</th>
+                  <th className="p-4 font-bold rounded-tl-lg">Match</th>
+                  <th className="p-4 font-bold">Prediction</th>
+                  <th className="p-4 text-right font-bold rounded-tr-lg">Result</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-white/5 hover:bg-white/5">
-                   <td className="p-3 font-semibold">Arsenal vs Liverpool</td>
-                   <td className="p-3 text-slate-300">Arsenal</td>
-                   <td className="p-3 text-right text-yellow-500 font-bold">Pending</td>
-                </tr>
-                <tr className="hover:bg-white/5">
-                   <td className="p-3 font-semibold">Real Madrid vs Barcelona</td>
-                   <td className="p-3 text-slate-300">Real Madrid</td>
-                   <td className="p-3 text-right text-green-500 font-bold">WIN</td>
-                </tr>
+                {user?.predictions?.map((pred: any) => (
+                  <tr key={pred.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                     <td className="p-4 font-semibold text-white">{pred.match_title}</td>
+                     <td className="p-4 text-[#ff6b00] font-bold">{pred.predicted_winner}</td>
+                     <td className={`p-4 text-right font-black tracking-wider ${
+                       pred.result === 'WIN' ? 'text-green-500' :
+                       pred.result === 'LOSS' ? 'text-red-500' :
+                       'text-yellow-500'
+                     }`}>{pred.result}</td>
+                  </tr>
+                ))}
+                {(!user?.predictions || user.predictions.length === 0) && (
+                  <tr>
+                    <td colSpan={3} className="p-8 text-center text-slate-500 font-semibold">
+                      You haven't made any match predictions yet!
+                    </td>
+                  </tr>
+                )}
               </tbody>
            </table>
         </div>

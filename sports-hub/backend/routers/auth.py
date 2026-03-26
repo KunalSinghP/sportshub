@@ -93,3 +93,65 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
 @router.get("/me", response_model=schemas.User)
 def read_users_me(current_user: models.User = Depends(get_current_user)):
     return current_user
+
+@router.get("/me/profile")
+def get_user_profile(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    predictions = db.query(models.Prediction).filter(models.Prediction.user_id == current_user.id).all()
+    total_picks = len(predictions)
+    
+    correct = 0
+    resolved = 0
+    ui_predictions = []
+    
+    for p in predictions:
+        match = db.query(models.Match).filter(models.Match.id == p.match_id).first()
+        match_title = f"{match.team1} vs {match.team2}" if match else "Unknown Match"
+        result_text = "Pending"
+        
+        if match and match.status == "finished":
+            resolved += 1
+            won_match = match.team1 if match.score_team1 > match.score_team2 else match.team2
+            is_tie = match.score_team1 == match.score_team2
+            
+            if is_tie:
+                result_text = "TIE"
+            elif p.predicted_winner == won_match:
+                correct += 1
+                result_text = "WIN"
+            else:
+                result_text = "LOSS"
+                
+        ui_predictions.append({
+            "id": p.id,
+            "match_title": match_title,
+            "predicted_winner": p.predicted_winner,
+            "result": result_text if match else "Unknown"
+        })
+        
+    accuracy = (correct / resolved * 100) if resolved > 0 else 0.0
+    
+    posts = db.query(models.Post).filter(models.Post.author_id == current_user.id).all()
+    ui_posts = []
+    for post in posts:
+        community = db.query(models.Community).filter(models.Community.id == post.community_id).first()
+        comment_count = db.query(models.Comment).filter(models.Comment.post_id == post.id).count()
+        ui_posts.append({
+            "id": post.id,
+            "title": post.title,
+            "content": post.content,
+            "authorName": current_user.username,
+            "communityName": community.name if community else "General",
+            "upvotes": post.upvotes,
+            "commentCount": comment_count,
+            "timeAgo": post.created_at.strftime("%b %d, %Y") if hasattr(post, "created_at") and post.created_at else "Recently"
+        })
+        
+    return {
+        "username": current_user.username,
+        "joined": "August 2025",
+        "accuracy": round(accuracy, 1),
+        "rank": 1,
+        "totalPicks": total_picks,
+        "posts": ui_posts,
+        "predictions": ui_predictions
+    }
