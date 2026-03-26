@@ -108,14 +108,9 @@ def get_user_profile(db: Session = Depends(get_db), current_user: models.User = 
         match_title = f"{match.team1} vs {match.team2}" if match else "Unknown Match"
         result_text = "Pending"
         
-        if match and match.status == "finished":
+        if p.is_correct is not None:
             resolved += 1
-            won_match = match.team1 if match.score_team1 > match.score_team2 else match.team2
-            is_tie = match.score_team1 == match.score_team2
-            
-            if is_tie:
-                result_text = "TIE"
-            elif p.predicted_winner == won_match:
+            if p.is_correct is True:
                 correct += 1
                 result_text = "WIN"
             else:
@@ -125,7 +120,7 @@ def get_user_profile(db: Session = Depends(get_db), current_user: models.User = 
             "id": p.id,
             "match_title": match_title,
             "predicted_winner": p.predicted_winner,
-            "result": result_text if match else "Unknown"
+            "result": result_text
         })
         
     accuracy = (correct / resolved * 100) if resolved > 0 else 0.0
