@@ -60,9 +60,13 @@ def create_community(community: schemas.CommunityCreate, db: Session = Depends(g
 
 @router.get("/name/{name}", response_model=schemas.CommunityDetail)
 def get_community_by_name(name: str, db: Session = Depends(get_db)):
-    # Format the name (replace dashes with spaces)
-    formatted_name = name.replace("-", " ").title()
-    comm = db.query(models.Community).filter(models.Community.name.ilike(formatted_name)).first()
+    # Try exact match first (handles communities saved with dashes like "my-cool-comm")
+    comm = db.query(models.Community).filter(models.Community.name.ilike(name)).first()
+    
+    # If not found, try replacing dashes with spaces (handles seeded ones like "IPL Official")
+    if not comm:
+        formatted_name = name.replace("-", " ")
+        comm = db.query(models.Community).filter(models.Community.name.ilike(formatted_name)).first()
     
     if not comm:
         raise HTTPException(status_code=404, detail="Community not found")
