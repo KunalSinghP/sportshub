@@ -107,7 +107,8 @@ export default function MatchPage({ params }: { params: any }) {
       }
 
       setWsStatus("🟡 Connecting...");
-      ws = new WebSocket(`wss://sportshub-hjro.onrender.com/ws/match/${matchId}`);
+      const wsUrl = API.replace(/^http/, 'ws');
+      ws = new WebSocket(`${wsUrl}/ws/match/${matchId}`);
 
       ws.onopen = () => {
         console.log("✅ WS connected");
