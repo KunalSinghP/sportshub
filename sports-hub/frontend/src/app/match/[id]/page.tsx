@@ -3,6 +3,7 @@ import { API } from "@/lib/api";
 import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, MessageSquare, PieChart, Activity, Zap, Send } from "lucide-react";
 import Link from "next/link";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function MatchPage({ params }: { params: any }) {
   const [matchId, setMatchId] = useState<string | null>(null);
@@ -216,7 +217,7 @@ export default function MatchPage({ params }: { params: any }) {
     }
   };
   
-  if (!match) return <div className="p-10">Loading...</div>;
+  if (!match) return <LoadingSpinner message="Loading Match..." />;
   return (
     <div className="max-w-5xl mx-auto pb-8 p-4">
       <Link href="/" className="inline-flex items-center gap-2 text-slate-400 hover:text-white mb-6 transition-colors">

@@ -4,6 +4,7 @@ import { Trophy, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { API } from "@/lib/api";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function LeaderboardPage() {
   const [users, setUsers] = useState<any[]>([]);
@@ -90,7 +91,7 @@ export default function LeaderboardPage() {
           </thead>
           <tbody>
             {loading && (
-              <tr><td colSpan={4} className="p-4 text-center text-slate-400">Loading...</td></tr>
+              <tr><td colSpan={4} className="p-4"><LoadingSpinner message="Loading Rankings..." /></td></tr>
             )}
             {!loading && users.length === 0 && (
               <tr><td colSpan={4} className="p-4 text-center text-slate-400">No predictions yet.</td></tr>

@@ -5,6 +5,7 @@ import { User as UserIcon, Settings, Target, MessageSquare, Clock } from "lucide
 import PostCard from "@/components/PostCard";
 import { useRouter } from "next/navigation";
 import { API } from "@/lib/api";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -50,9 +51,7 @@ export default function ProfilePage() {
 
   if (isLoading || !user) {
     return (
-      <div className="min-h-[50vh] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-t-2 border-[#ff6b00]"></div>
-      </div>
+      <LoadingSpinner message="Loading Profile..." />
     );
   }
 
