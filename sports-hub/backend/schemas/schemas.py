@@ -113,3 +113,24 @@ class MatchMessage(MatchMessageBase):
     
     class Config:
         from_attributes = True
+
+class CommunityDetail(CommunityBase):
+    id: int
+    member_count: int
+    is_member: bool = False
+    
+    class Config:
+        from_attributes = True
+
+class PostResponse(BaseModel):
+    id: int
+    title: str
+    content: str
+    communityName: str
+    authorName: str
+    upvotes: int
+    commentCount: int
+    timeAgo: str
+    
+    class Config:
+        from_attributes = True

@@ -1,7 +1,14 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float, Table
 from sqlalchemy.orm import relationship
 from datetime import datetime
 from database import Base
+
+community_members = Table(
+    "community_members",
+    Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id")),
+    Column("community_id", Integer, ForeignKey("communities.id"))
+)
 
 class User(Base):
     __tablename__ = "users"
@@ -10,8 +17,10 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     
+    
     posts = relationship("Post", back_populates="author")
     comments = relationship("Comment", back_populates="author")
+    joined_communities = relationship("Community", secondary=community_members, back_populates="members")
 
 class Community(Base):
     __tablename__ = "communities"
@@ -21,6 +30,7 @@ class Community(Base):
     description = Column(String)
     
     posts = relationship("Post", back_populates="community")
+    members = relationship("User", secondary=community_members, back_populates="joined_communities")
 
 class Post(Base):
     __tablename__ = "posts"

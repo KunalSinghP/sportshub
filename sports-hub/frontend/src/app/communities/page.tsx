@@ -1,6 +1,7 @@
 import { API } from "@/lib/api";
 import { Users, ArrowLeft, Search } from "lucide-react";
 import Link from "next/link";
+import CreateCommunityModal from "@/components/CreateCommunityModal";
 
 export default async function CommunitiesPage() {
   const res = await fetch(`${API}/communities`, {
@@ -34,6 +35,9 @@ export default async function CommunitiesPage() {
             className="w-full bg-[#141a2b] border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm outline-none focus:border-[#ff6b00] transition-colors"
           />
         </div>
+        
+        {/* Create Community Trigger */}
+        <CreateCommunityModal />
       </div>
 
       {/* Communities Grid Layout */}
