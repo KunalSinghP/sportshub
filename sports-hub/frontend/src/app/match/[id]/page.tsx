@@ -1,7 +1,7 @@
 "use client";
 import { API } from "@/lib/api";
 import { useState, useEffect, useRef } from "react";
-import { ArrowLeft, MessageSquare, PieChart, Activity, Zap, Send } from "lucide-react";
+import { ArrowLeft, MessageSquare, PieChart, Send } from "lucide-react";
 import Link from "next/link";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
@@ -159,9 +159,7 @@ export default function MatchPage({ params }: { params: any }) {
     };
   }, [matchId]);
   
-  // AI Probabilities Mock
-  const probTeam1 = 65;
-  const probTeam2 = 35;
+
 
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
@@ -231,50 +229,18 @@ export default function MatchPage({ params }: { params: any }) {
         {/* Dynamic Background Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b from-[#ff6b00]/10 to-transparent pointer-events-none" />
         
-        <div className="flex flex-col md:flex-row justify-between items-center gap-8 relative z-10">
+        <div className="flex flex-col md:flex-row justify-center items-center gap-8 relative z-10 text-center">
           <div className="flex-1 text-center md:text-right">
             <h2 className="text-3xl md:text-4xl font-bold mb-2">{match.team1}</h2>
-            <p className="text-slate-400">Home</p>
           </div>
-          
-          <div className="flex flex-col items-center px-8">
-            <div className="flex items-center gap-4 text-4xl md:text-6xl font-black font-mono tracking-tighter mb-2">
-              <span>{match.score_team1}</span>
-              <span className="text-slate-600">-</span>
-              <span>{match.score_team2}</span>
-            </div>
-            <div className="flex items-center gap-2 text-red-500 font-bold text-sm bg-red-500/10 px-3 py-1 rounded-full">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              {match.status?.toUpperCase()}
-            </div>
-          </div>
-
+          <div className="text-xl font-bold text-slate-500">vs</div>
           <div className="flex-1 text-center md:text-left">
             <h2 className="text-3xl md:text-4xl font-bold mb-2">{match.team2}</h2>
-            <p className="text-slate-400">Away</p>
           </div>
         </div>
       </div>
 
-      {/* AI Win Probability Bar */}
-      <div className="glass rounded-xl p-5 mb-8">
-        <div className="flex justify-between items-center mb-3">
-          <div className="flex items-center gap-2 text-[#ff6b00] font-bold">
-            <Zap size={18} />
-            <span>AI Win Probability</span>
-          </div>
-          <span className="text-xs text-slate-400">Live Updating</span>
-        </div>
-        
-        <div className="flex h-3 rounded-full overflow-hidden bg-slate-800">
-          <div style={{ width: `${probTeam1}%` }} className="bg-blue-500 transition-all duration-1000 relative">
-            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-bold">{match.team1?.substring(0,3).toUpperCase()} {probTeam1}%</span>
-          </div>
-          <div style={{ width: `${probTeam2}%` }} className="bg-red-500 transition-all duration-1000 relative">
-            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold">{match.team2?.substring(0,3).toUpperCase()} {probTeam2}%</span>
-          </div>
-        </div>
-      </div>
+
 
       <div className="flex flex-col lg:flex-row gap-8">
         {/* Main Content (Tabs) */}
@@ -282,7 +248,6 @@ export default function MatchPage({ params }: { params: any }) {
           <div className="flex gap-4 border-b border-white/10 mb-6 overflow-x-auto hide-scroll">
             {[
               { id: "Chat", icon: MessageSquare },
-              { id: "Stats", icon: Activity },
               { id: "Predictions", icon: PieChart }
             ].map((tab) => {
               const Icon = tab.icon;
@@ -304,17 +269,6 @@ export default function MatchPage({ params }: { params: any }) {
             })}
           </div>
 
-          {/* Tab Content */}
-          <div className="glass-accent rounded-xl p-1 mb-6">
-            <div className="bg-[#141a2b] rounded-lg p-5">
-              <h3 className="font-bold text-[#ff6b00] mb-2 flex items-center gap-2">
-                <Zap size={16} /> AI Match Analyst Insight
-              </h3>
-              <p className="text-sm text-slate-300 leading-relaxed">
-                Based on the pitch report and historical data, the home team holds a slight advantage chasing. Their spinners have consistently restricted runs in the middle overs. The AI predicts a high-scoring thriller.
-              </p>
-            </div>
-          </div>
 
           {activeTab === "Chat" && (
             <div className="glass rounded-xl flex flex-col h-[500px]">

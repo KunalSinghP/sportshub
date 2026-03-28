@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import engine, get_db, SessionLocal
 from models import models
-from routers import auth, communities, matches, ai, posts, predictions
+from routers import auth, communities, matches, posts, predictions
 from ws.manager import manager
 import json
 from seed import seed_database
@@ -28,7 +28,6 @@ app.add_middleware(
 app.include_router(auth.router)
 app.include_router(communities.router)
 app.include_router(matches.router)
-app.include_router(ai.router)
 app.include_router(posts.router)
 app.include_router(predictions.router)
 

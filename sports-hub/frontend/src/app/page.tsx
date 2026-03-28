@@ -13,13 +13,9 @@ export default async function Home() {
 
   const matchData = await matchRes.json();
 
-  // ✅ ensure array + fix backend fields
+  // ✅ ensure array
   const mockMatches = Array.isArray(matchData)
-    ? matchData.map((m: any) => ({
-        ...m,
-        score1: m.score_team1 ?? 0,
-        score2: m.score_team2 ?? 0,
-      }))
+    ? matchData
     : [];
 
   // FETCH POSTS
@@ -50,11 +46,11 @@ export default async function Home() {
       {/* Main Content Area */}
       <div className="flex-1 min-w-0">
         
-        {/* Trending Matches */}
+        {/* Trending Discussions */}
         <section className="mb-10">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="text-[#ff6b00]" size={20} />
-            <h2 className="text-xl font-bold tracking-tight">Trending Matches</h2>
+            <h2 className="text-xl font-bold tracking-tight">Trending Discussions</h2>
           </div>
           
           <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scroll">

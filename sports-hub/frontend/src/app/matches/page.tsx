@@ -11,11 +11,7 @@ export default async function MatchesPage() {
   const matchData = await matchRes.json();
 
   const matchesArray = Array.isArray(matchData)
-    ? matchData.map((m: any) => ({
-        ...m,
-        score1: m.score_team1 ?? 0,
-        score2: m.score_team2 ?? 0,
-      }))
+    ? matchData
     : [];
 
   return (
