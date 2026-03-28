@@ -39,7 +39,7 @@ def create_prediction(match_id: int, prediction_team: str, db: Session = Depends
         
     db_prediction = models.Prediction(
         predicted_winner=prediction_team,
-        user_id=current_user.id,
+        user_id=str(current_user.id),
         match_id=match.id
     )
     db.add(db_prediction)

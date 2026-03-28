@@ -96,7 +96,7 @@ def read_users_me(current_user: models.User = Depends(get_current_user)):
 
 @router.get("/me/profile")
 def get_user_profile(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    predictions = db.query(models.Prediction).filter(models.Prediction.user_id == current_user.id).all()
+    predictions = db.query(models.Prediction).filter(models.Prediction.user_id == str(current_user.id)).all()
     total_picks = len(predictions)
     
     correct = 0

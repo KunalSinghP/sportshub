@@ -26,7 +26,7 @@ def create_prediction(
     # Check if prediction exists for this user and match
     existing_prediction = db.query(models.Prediction).filter(
         models.Prediction.match_id == prediction.match_id,
-        models.Prediction.user_id == current_user.id
+        models.Prediction.user_id == str(current_user.id)
     ).first()
     
     if existing_prediction:
@@ -35,7 +35,7 @@ def create_prediction(
         # Force real authenticated ID insertion
         db_prediction = models.Prediction(
             match_id=prediction.match_id,
-            user_id=current_user.id,
+            user_id=str(current_user.id),
             username=current_user.username,
             predicted_winner=prediction.predicted_winner
         )
@@ -52,7 +52,7 @@ def get_user_prediction(
 ):
     prediction = db.query(models.Prediction).filter(
         models.Prediction.match_id == match_id,
-        models.Prediction.user_id == current_user.id
+        models.Prediction.user_id == str(current_user.id)
     ).first()
     if not prediction:
         raise HTTPException(status_code=404, detail="Prediction not found")
