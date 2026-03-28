@@ -143,7 +143,7 @@ def get_user_profile(db: Session = Depends(get_db), current_user: models.User = 
         
     return {
         "username": current_user.username,
-        "joined": "August 2025",
+        "joined": current_user.created_at.strftime("%B %Y") if hasattr(current_user, "created_at") and current_user.created_at else "Recently",
         "accuracy": round(accuracy, 1),
         "rank": 1,
         "totalPicks": total_picks,
