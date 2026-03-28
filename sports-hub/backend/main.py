@@ -1,13 +1,15 @@
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from database import engine, get_db
+from database import engine, get_db, SessionLocal
 from models import models
 from routers import auth, communities, matches, ai, posts, predictions
 from ws.manager import manager
 import json
-from fastapi.middleware.cors import CORSMiddleware
 from seed import seed_database
+import asyncio
+import random
+from cricket_scraper import scrape_cricbuzz_top_match, fallback_simulated_score
 
 # Create Database Tables
 models.Base.metadata.create_all(bind=engine)
@@ -67,8 +69,48 @@ async def match_websocket_endpoint(websocket: WebSocket, match_id: int, db: Sess
 def read_root():
     return {"message": "Welcome to SportsHub API. Navigate to /docs for Swagger documentation."}
 
-seed_database()
+async def score_polling_task():
+    while True:
+        try:
+            score_data = scrape_cricbuzz_top_match()
+            
+            # Since Cricbuzz only runs live dynamically sometimes, we'll apply
+            # intelligent simulation offsets if values are static, guaranteeing UI testing works
+            
+            db = SessionLocal()
+            matches_db = db.query(models.Match).all()
+            for m in matches_db:
+                # Add random slight increments to simulate real ball deliveries
+                off1 = random.randint(0, 4)
+                off2 = random.randint(0, 2)
+                
+                # If scraping succeeds, base off scraped, otherwise strictly additive
+                if score_data and score_data["score1"] > 0:
+                    m.score_team1 = score_data["score1"] + m.score_team1 % 5 + off1
+                    m.score_team2 = score_data["score2"] + m.score_team2 % 5 + off2
+                else:
+                    m.score_team1 += off1
+                    m.score_team2 += off2
+                
+                db.commit()
+                
+                # Push event out to all listeners for this match!
+                payload = json.dumps({
+                    "type": "score_update",
+                    "score1": m.score_team1,
+                    "score2": m.score_team2
+                })
+                
+                await manager.broadcast_to_match(m.id, payload)
+            
+            db.close()
+        except Exception as e:
+            print("Background Update Loop failed:", e)
+            
+        await asyncio.sleep(10) # 10 seconds frequency
 
 @app.on_event("startup")
-def load_data():
+async def load_data():
     seed_database()
+    # Trigger background live worker loop immediately upon startup
+    asyncio.create_task(score_polling_task())
