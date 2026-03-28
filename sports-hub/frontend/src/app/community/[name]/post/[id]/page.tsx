@@ -75,7 +75,16 @@ export default function PostDetailPage() {
         body: JSON.stringify({ content: commentText.trim() })
       });
 
-      if (!res.ok) throw new Error("Failed to post comment");
+      if (!res.ok) {
+        if (res.status === 401) {
+          alert("Your session has expired. Please log in again.");
+          localStorage.removeItem("sportsHubToken");
+          router.push("/login");
+          return;
+        }
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.detail || "Failed to post comment");
+      }
       const newComment = await res.json();
       
       // Update local state smoothly
@@ -85,9 +94,9 @@ export default function PostDetailPage() {
           comments: [...prev.comments, newComment]
       } : prev);
       setCommentText("");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Error submitting comment");
+      alert(error.message || "Error submitting comment");
     } finally {
       setSubmitting(false);
     }
