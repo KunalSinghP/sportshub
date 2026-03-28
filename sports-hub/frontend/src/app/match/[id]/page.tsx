@@ -124,16 +124,6 @@ export default function MatchPage({ params }: { params: any }) {
           return; // Skip our own message since we optimistically added it
         }
 
-        try {
-          const parsed = JSON.parse(event.data);
-          if (parsed.type === "score_update") {
-            setMatch((prev: any) => prev ? { ...prev, score_team1: parsed.score1, score_team2: parsed.score2 } : prev);
-            return;
-          }
-        } catch (e) {
-          // It's a plain text chat message, proceed below
-        }
-
         const receivedText = event.data;
         const splitIndex = receivedText.indexOf(":");
         const messageUser = splitIndex > -1 ? receivedText.substring(0, splitIndex) : "User";
