@@ -134,3 +134,18 @@ class PostResponse(BaseModel):
     
     class Config:
         from_attributes = True
+
+class CommentResponse(BaseModel):
+    id: int
+    content: str
+    authorName: str
+    timeAgo: str
+    
+    class Config:
+        from_attributes = True
+
+class PostDetailResponse(PostResponse):
+    comments: List[CommentResponse] = []
+    
+    class Config:
+        from_attributes = True

@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { ArrowBigUp, MessageSquare, Share2, MoreHorizontal } from "lucide-react";
+import { useState } from "react";
 
 interface PostCardProps {
   id: number;
@@ -23,15 +26,52 @@ export default function PostCard({
   timeAgo,
 }: PostCardProps) {
 
-  // ✅ SAFE FALLBACKS (CRITICAL FIX)
+  // ✅ SAFE FALLBACKS
   const safeCommunity = (communityName || "general")
     .toLowerCase()
     .replace(/\s+/g, "-");
 
   const safeAuthor = authorName || "user";
-  const safeUpvotes = upvotes ?? 0;
   const safeComments = commentCount ?? 0;
   const safeTime = timeAgo || "Just now";
+
+  const [localUpvotes, setLocalUpvotes] = useState(upvotes ?? 0);
+  const [userVote, setUserVote] = useState<"up" | "down" | null>(null);
+
+  const handleVote = async (e: React.MouseEvent, type: "up" | "down") => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (userVote === type) return;
+
+    const previousVotes = localUpvotes;
+    const previousUserVote = userVote;
+
+    // Optimistic Update
+    let newVotes = localUpvotes;
+    if (type === "up") {
+      newVotes = userVote === "down" ? localUpvotes + 2 : localUpvotes + 1;
+    } else {
+      newVotes = userVote === "up" ? localUpvotes - 2 : localUpvotes - 1;
+    }
+    setLocalUpvotes(newVotes);
+    setUserVote(type);
+
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/posts/${id}/upvote`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: type })
+      });
+      if (!res.ok) throw new Error("Vote failed");
+      
+      const data = await res.json();
+      setLocalUpvotes(data.upvotes); // Sync with truth
+    } catch (error) {
+       setLocalUpvotes(previousVotes);
+       setUserVote(previousUserVote);
+    }
+  };
 
   return (
     <div className="glass rounded-xl p-4 transition-colors hover:border-white/10 group">
@@ -74,7 +114,7 @@ export default function PostCard({
           {title || "Untitled Post"}
         </h3>
 
-        <p className="text-sm text-slate-300 line-clamp-3 leading-relaxed">
+        <p className="text-sm text-slate-300 line-clamp-3 leading-relaxed whitespace-pre-wrap">
           {content || "No content available"}
         </p>
       </Link>
@@ -84,14 +124,20 @@ export default function PostCard({
         
         {/* Upvotes */}
         <div className="flex items-center bg-white/5 rounded-full border border-white/5">
-          <button className="p-1.5 hover:bg-white/10 rounded-l-full hover:text-[#ff6b00] transition-colors">
-            <ArrowBigUp size={18} />
+          <button 
+            onClick={(e) => handleVote(e, "up")}
+            className={`p-1.5 hover:bg-white/10 rounded-l-full hover:text-[#ff6b00] transition-colors ${userVote === 'up' ? 'text-[#ff6b00]' : ''}`}
+          >
+            <ArrowBigUp size={18} className={userVote === 'up' ? 'fill-current' : ''} />
           </button>
 
-          <span className="px-1 text-white">{safeUpvotes}</span>
+          <span className={`px-1 ${userVote ? 'text-[#ff6b00]' : 'text-white'}`}>{localUpvotes}</span>
 
-          <button className="p-1.5 hover:bg-white/10 rounded-r-full hover:text-[#ff6b00] transition-colors rotate-180">
-            <ArrowBigUp size={18} />
+          <button 
+            onClick={(e) => handleVote(e, "down")}
+            className={`p-1.5 hover:bg-white/10 rounded-r-full hover:text-[#ff6b00] transition-colors rotate-180 ${userVote === 'down' ? 'text-[#ff6b00]' : ''}`}
+          >
+            <ArrowBigUp size={18} className={userVote === 'down' ? 'fill-current' : ''} />
           </button>
         </div>
 
