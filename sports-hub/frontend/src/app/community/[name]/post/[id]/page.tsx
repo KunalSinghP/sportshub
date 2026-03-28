@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Send } from "lucide-react";
 import PostCard from "@/components/PostCard";
+import { API } from "@/lib/api";
 
 interface Comment {
   id: number;
@@ -37,7 +38,7 @@ export default function PostDetailPage() {
   useEffect(() => {
     if (!id) return;
 
-    fetch(`http://127.0.0.1:8000/posts/${id}`)
+    fetch(`${API}/posts/${id}`)
       .then((res) => {
         if (!res.ok) throw new Error("Failed to load post");
         return res.json();
@@ -65,7 +66,7 @@ export default function PostDetailPage() {
 
     setSubmitting(true);
     try {
-      const res = await fetch(`http://127.0.0.1:8000/posts/${id}/comments`, {
+      const res = await fetch(`${API}/posts/${id}/comments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
