@@ -63,7 +63,7 @@ async def match_websocket_endpoint(websocket: WebSocket, match_id: int, db: Sess
     except WebSocketDisconnect:
         manager.disconnect(match_id, websocket)
         
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def read_root():
     return {"message": "Welcome to SportsHub API. Navigate to /docs for Swagger documentation."}
 
