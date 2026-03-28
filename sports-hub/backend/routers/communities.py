@@ -6,7 +6,8 @@ from datetime import datetime
 from database import get_db
 from models import models
 from schemas import schemas
-from routers.auth import get_current_user
+from routers.auth import get_current_user, SECRET_KEY, ALGORITHM
+from jose import jwt
 
 router = APIRouter(
     prefix="/communities",
@@ -58,8 +59,9 @@ def create_community(community: schemas.CommunityCreate, db: Session = Depends(g
     db.refresh(db_community)
     return db_community
 
+from fastapi import Request
 @router.get("/name/{name}", response_model=schemas.CommunityDetail)
-def get_community_by_name(name: str, db: Session = Depends(get_db)):
+def get_community_by_name(name: str, request: Request, db: Session = Depends(get_db)):
     # Try exact match first (handles communities saved with dashes like "my-cool-comm")
     comm = db.query(models.Community).filter(models.Community.name.ilike(name)).first()
     
@@ -71,12 +73,26 @@ def get_community_by_name(name: str, db: Session = Depends(get_db)):
     if not comm:
         raise HTTPException(status_code=404, detail="Community not found")
         
+    is_member = False
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        token = auth_header.split(" ")[1]
+        try:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            username = payload.get("sub")
+            if username:
+                user = db.query(models.User).filter(models.User.username == username).first()
+                if user and user in comm.members:
+                    is_member = True
+        except Exception:
+            pass
+            
     return {
         "id": comm.id,
         "name": comm.name,
         "description": comm.description,
         "member_count": len(comm.members),
-        "is_member": False # Frontend will handle state manually or we can pass token if needed later
+        "is_member": is_member
     }
 
 @router.post("/{community_id}/join")
@@ -85,15 +101,20 @@ def join_leave_community(community_id: int, db: Session = Depends(get_db), curre
     if not comm:
         raise HTTPException(status_code=404, detail="Community not found")
         
-    if current_user in comm.members:
-        comm.members.remove(current_user)
-        action = "left"
-    else:
-        comm.members.append(current_user)
-        action = "joined"
-        
-    db.commit()
-    return {"message": f"Successfully {action} community", "action": action, "member_count": len(comm.members)}
+    try:
+        if current_user in comm.members:
+            comm.members.remove(current_user)
+            action = "left"
+        else:
+            comm.members.append(current_user)
+            action = "joined"
+            
+        db.commit()
+        db.refresh(comm)
+        return {"message": f"Successfully {action} community", "action": action, "member_count": len(comm.members)}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/{community_id}/posts", response_model=List[schemas.PostResponse])
 def read_community_posts(community_id: int, skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):

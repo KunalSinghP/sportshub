@@ -92,6 +92,11 @@ export default function CommunityPage({ params }: { params: any }) {
           is_member: data.action === "joined",
           member_count: data.member_count
         }));
+      } else if (res.status === 401) {
+        localStorage.removeItem("sportsHubToken");
+        localStorage.removeItem("chatUsername");
+        alert("Session expired. Please log in again.");
+        window.location.href = "/login";
       } else {
         alert("Failed to update membership status");
       }
@@ -131,6 +136,13 @@ export default function CommunityPage({ params }: { params: any }) {
         setPosts(prev => [newPost, ...prev]);
         setNewPostTitle("");
         setNewPostContent("");
+      } else if (res.status === 401) {
+        localStorage.removeItem("sportsHubToken");
+        localStorage.removeItem("chatUsername");
+        alert("Session expired. Please log in again.");
+        window.location.href = "/login";
+      } else {
+        alert("Failed to create post");
       }
     } catch(err) {
       console.error(err);
