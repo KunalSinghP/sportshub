@@ -7,8 +7,9 @@ import PostCard from "@/components/PostCard";
 import LoadingSpinner from "@/components/LoadingSpinner";
 import { API } from "@/lib/api";
 
-export default function CommunityPage({ params }: { params: { name: string } }) {
-  const [communityName, setCommunityName] = useState(decodeURIComponent(params.name).replace(/-/g, " ").replace(/\b\w/g, l => l.toUpperCase()));
+export default function CommunityPage({ params }: { params: any }) {
+  const [actualName, setActualName] = useState<string | null>(null);
+  const [communityName, setCommunityName] = useState("");
   const [community, setCommunity] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,12 +23,23 @@ export default function CommunityPage({ params }: { params: { name: string } }) 
   const token = typeof window !== 'undefined' ? localStorage.getItem("sportsHubToken") : null;
 
   useEffect(() => {
+    Promise.resolve(params).then((p) => {
+      if (p?.name) {
+        setActualName(p.name);
+        setCommunityName(decodeURIComponent(p.name).replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase()));
+      }
+    });
+  }, [params]);
+
+  useEffect(() => {
+    if (!actualName) return;
+
     async function fetchCommunityData() {
       try {
         const headers: any = {};
         if (token) headers["Authorization"] = `Bearer ${token}`;
         
-        const commRes = await fetch(`${API}/communities/name/${params.name}`, { headers });
+        const commRes = await fetch(`${API}/communities/name/${actualName}`, { headers });
         if (commRes.ok) {
           const commData = await commRes.json();
           setCommunity(commData);
@@ -46,7 +58,7 @@ export default function CommunityPage({ params }: { params: { name: string } }) 
     }
     
     fetchCommunityData();
-  }, [params.name, token]);
+  }, [actualName, token]);
 
   const requireAuthToParticipate = (e: React.MouseEvent | React.FocusEvent) => {
     if (!token) {
